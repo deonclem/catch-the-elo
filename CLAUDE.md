@@ -26,6 +26,14 @@ A competitive chess web application where players guess the average Elo rating o
 - **Code versioning**: Do not commit or push code unless explicitly instructed to do so.
 - **Documentation**: You have full authority to update this file and keep it in sync with the codebase changes.
 
+## 📱 Mobile-First Design
+
+- **Responsive Strategy**: Always use Tailwind's mobile-first approach — styles without prefix target mobile, `md:` and `lg:` for larger screens.
+- **Chessboard Scaling**: The chessboard must be responsive. On mobile it fills nearly full viewport width (`w-[95vw]`), capped at a max-width on desktop. Use `dynamic` import with `ssr: false` and read `window.innerWidth` at render time to compute `boardWidth`.
+- **Touch Targets**: All interactive elements (buttons, arrows, inputs) must have a minimum touch target of 44×44px. No hover-only logic for essential features.
+- **Input Optimization**: For Elo guesses, use `inputMode="numeric"` or `type="number"` to trigger numeric keypad on iOS/Android.
+- **Viewport**: Ensure no horizontal scrolling ever occurs.
+
 ## 🧹 Quality Control Workflow (CRITICAL)
 
 - **Mandatory Post-Dev Action**: After feature implementation or code change, you MUST run `npm run cleanup`.
