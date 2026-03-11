@@ -14,10 +14,50 @@ export type Database = {
   }
   public: {
     Tables: {
+      daily_games: {
+        Row: {
+          black_elo: number
+          created_at: string
+          deleted_at: string | null
+          id: string
+          metadata: Json
+          pgn: string
+          scheduled_for: string
+          target_elo: number
+          updated_at: string
+          white_elo: number
+        }
+        Insert: {
+          black_elo: number
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          metadata?: Json
+          pgn: string
+          scheduled_for: string
+          target_elo: number
+          updated_at?: string
+          white_elo: number
+        }
+        Update: {
+          black_elo?: number
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          metadata?: Json
+          pgn?: string
+          scheduled_for?: string
+          target_elo?: number
+          updated_at?: string
+          white_elo?: number
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
           created_at: string
+          deleted_at: string | null
           highest_score: number
           id: string
           rating: number
@@ -27,6 +67,7 @@ export type Database = {
         Insert: {
           avatar_url?: string | null
           created_at?: string
+          deleted_at?: string | null
           highest_score?: number
           id: string
           rating?: number
@@ -36,6 +77,7 @@ export type Database = {
         Update: {
           avatar_url?: string | null
           created_at?: string
+          deleted_at?: string | null
           highest_score?: number
           id?: string
           rating?: number

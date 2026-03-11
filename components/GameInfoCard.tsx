@@ -11,7 +11,9 @@ export function GameInfoCard({ timeControl }: Props) {
         <CardTitle className="text-base">White vs Black</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="text-muted-foreground text-center text-sm">{timeControl}</div>
+        <div className="text-muted-foreground text-center text-sm">
+          {timeControl}
+        </div>
       </CardContent>
     </Card>
   )

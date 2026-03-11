@@ -1,0 +1,3 @@
+chess>=1.10          # python-chess: PGN streaming parser
+supabase>=2.0        # Supabase Python client
+python-dotenv>=1.0   # Load scripts/.env at runtime
