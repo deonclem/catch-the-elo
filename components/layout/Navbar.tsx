@@ -23,8 +23,9 @@ function isActive(pathname: string, href: string): boolean {
   return href === '/' ? pathname === '/' : pathname.startsWith(href)
 }
 
-export function Navbar() {
+export function Navbar({ isLoggedIn }: { isLoggedIn: boolean }) {
   const pathname = usePathname()
+  const profileHref = isLoggedIn ? '/profile' : '/auth'
 
   return (
     <>
@@ -53,7 +54,11 @@ export function Navbar() {
           </nav>
 
           <Button variant="outline" size="sm" asChild>
-            <Link href="/auth">Sign In</Link>
+            {isLoggedIn ? (
+              <Link href="/profile">My Profile</Link>
+            ) : (
+              <Link href="/auth">Sign In</Link>
+            )}
           </Button>
         </div>
       </header>
@@ -61,11 +66,12 @@ export function Navbar() {
       {/* Mobile: fixed bottom nav */}
       <nav className="bg-background fixed inset-x-0 bottom-0 z-50 flex h-14 items-center border-t md:hidden">
         {MOBILE_NAV_ITEMS.map(({ href, label, Icon }) => {
-          const active = isActive(pathname, href)
+          const resolvedHref = label === 'Profile' ? profileHref : href
+          const active = isActive(pathname, resolvedHref)
           return (
             <Link
               key={href}
-              href={href}
+              href={resolvedHref}
               aria-label={label}
               className="flex min-h-[44px] flex-1 flex-col items-center justify-center gap-0.5 py-2"
             >

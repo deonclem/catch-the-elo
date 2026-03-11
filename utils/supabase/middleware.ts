@@ -27,7 +27,38 @@ export async function updateSession(request: NextRequest) {
   )
 
   // Refresh session — do not add logic between createServerClient and getUser
-  await supabase.auth.getUser()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  // Redirect logged-in users with no username to /onboarding.
+  // This covers Google OAuth users on first sign-in (username is NULL until onboarding).
+  // Email/password users always have a username set immediately after sign-up.
+  const pathname = request.nextUrl.pathname
+  const isExcluded =
+    pathname === '/onboarding' ||
+    pathname.startsWith('/auth') ||
+    pathname.startsWith('/_next') ||
+    pathname.startsWith('/api')
+
+  if (user && !isExcluded) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('username')
+      .eq('id', user.id)
+      .single()
+
+    if (!profile?.username) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/onboarding'
+      const redirectResponse = NextResponse.redirect(url)
+      // Forward auth cookies so the session isn't lost on redirect
+      supabaseResponse.cookies.getAll().forEach((cookie) => {
+        redirectResponse.cookies.set(cookie.name, cookie.value)
+      })
+      return redirectResponse
+    }
+  }
 
   return supabaseResponse
 }

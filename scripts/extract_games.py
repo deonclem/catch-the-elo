@@ -228,6 +228,8 @@ def main() -> None:
         return all(len(buckets[b]) >= games_per_bracket for b in BRACKETS)
 
     games_scanned = 0
+    scans_since_collect = 0  # incremented each scan, reset when a new game is collected
+    STALL_LIMIT = 50_000     # give up if no new game collected in this many scans
 
     # Stream PGN from stdin — memory-efficient even for multi-GB archives
     with io.TextIOWrapper(sys.stdin.buffer, encoding="utf-8", errors="replace") as pgn_stream:
@@ -239,6 +241,16 @@ def main() -> None:
                 break
 
             games_scanned += 1
+            scans_since_collect += 1
+
+            if scans_since_collect >= STALL_LIMIT:
+                print(
+                    f"\nWarning: no new games collected in {STALL_LIMIT:,} scans — "
+                    "remaining brackets are likely too rare in this archive. Stopping.",
+                    file=sys.stderr,
+                )
+                break
+
             if games_scanned % 10_000 == 0:
                 log_progress(games_scanned, buckets, games_per_bracket)
 
@@ -251,6 +263,7 @@ def main() -> None:
             # Only add if this bracket still needs more games
             if len(buckets[bracket]) < games_per_bracket:
                 buckets[bracket].append(row)
+                scans_since_collect = 0
 
     # Write all collected games to NDJSON (one JSON object per line)
     total_written = 0
