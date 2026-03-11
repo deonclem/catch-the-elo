@@ -41,10 +41,26 @@ A competitive chess web application where players guess the average Elo rating o
 - **Error Handling**: If `npm run cleanup` fails, analyze the output, fix the issues, and run it again until it passes.
 - **Style Consistency**: Never bypass Prettier formatting. Use the `cn()` utility for Tailwind class merging.
 
+## 🗄 Database Conventions
+
+Every table MUST have:
+
+- `created_at timestamptz DEFAULT now() NOT NULL`
+- `updated_at timestamptz DEFAULT now() NOT NULL` — auto-updated by the `set_updated_at()` trigger (defined in migration `20260311000000`)
+- `deleted_at timestamptz` — nullable, used for soft deletes
+
+When creating a new table, always add:
+
+```sql
+CREATE TRIGGER set_<table>_updated_at
+  BEFORE UPDATE ON public.<table>
+  FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+```
+
 ## 💾 Essential Commands
 
 - **Development**: `npm run dev`
 - **Build**: `npm run build`
 - **Type Check**: `npx tsc --noEmit`
 - **Lint**: `npm run lint`
-- **Supabase CLI**: `supabase db push` / `supabase gen types typescript --local`
+- **Supabase CLI**: `supabase db push` / `npx supabase gen types typescript --project-id rvevhocbeuexnuobafeg > lib/database.types.ts`

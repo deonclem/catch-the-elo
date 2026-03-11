@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Clock } from 'lucide-react'
 
 type Props = {
   timeControl: string
@@ -6,15 +6,9 @@ type Props = {
 
 export function GameInfoCard({ timeControl }: Props) {
   return (
-    <Card className="w-[95vw] max-w-[560px]">
-      <CardHeader>
-        <CardTitle className="text-base">White vs Black</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="text-muted-foreground text-center text-sm">
-          {timeControl}
-        </div>
-      </CardContent>
-    </Card>
+    <div className="text-muted-foreground flex items-center gap-1.5 text-sm">
+      <Clock className="size-4" />
+      <span>{timeControl}</span>
+    </div>
   )
 }

@@ -9,7 +9,7 @@ export default async function Home() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center gap-6 p-4">
       <h1 className="text-3xl font-bold tracking-tight md:text-4xl">
-        Catch The Elo
+        Daily Game
       </h1>
       <ChessGame game={parsedGame} />
     </main>
