@@ -1,6 +1,6 @@
 import { fetchRandomLichessGame } from '@/lib/services/lichess'
 import { parseGame } from '@/lib/chess/parser'
-import { ChessViewer } from '@/components/chess/chess-viewer'
+import { ChessGame } from '@/components/ChessGame'
 
 export default async function Home() {
   const lichessGame = await fetchRandomLichessGame()
@@ -11,7 +11,7 @@ export default async function Home() {
       <h1 className="text-3xl font-bold tracking-tight md:text-4xl">
         Catch The Elo
       </h1>
-      <ChessViewer game={parsedGame} />
+      <ChessGame game={parsedGame} />
     </main>
   )
 }

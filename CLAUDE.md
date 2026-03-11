@@ -22,7 +22,8 @@ A competitive chess web application where players guess the average Elo rating o
 - **Data Flow**: Use Server Actions (`use server`) for all database mutations.
 - **Validation**: All external data (Env vars, Server Action inputs, API responses) MUST be validated with Zod schemas.
 - **Style**: Functional components, utility-first CSS (Tailwind), no separate CSS files.
-- **Quality**: No `any` types, strict null checks, no useEffect, and consistent error handling.
+- **Quality**: No `any` types, strict null checks, no useEffect, and consistent error handling. Be pragmatic, ask yourself: "Would a staff engineer approve this?"
+- **Component size**: Keep components small and single-purpose. Extract dedicated components for distinct UI concerns (e.g. a modal gets its own file). Use composition and custom hooks to share logic. A component should do one thing — if it's doing two, split it.
 - **Code versioning**: Do not commit or push code unless explicitly instructed to do so.
 - **Documentation**: You have full authority to update this file and keep it in sync with the codebase changes.
 

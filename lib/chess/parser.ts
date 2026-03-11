@@ -14,7 +14,13 @@ export type ParsedGame = {
   moves: string[]
   white: PlayerInfo
   black: PlayerInfo
-  speed: string
+  timeControl: string
+}
+
+function formatTimeControl(initial: number, increment: number): string {
+  const minutes = initial / 60
+  const base = Number.isInteger(minutes) ? String(minutes) : `${initial}s`
+  return `${base}+${increment}`
 }
 
 export function parseGame(game: LichessGame): ParsedGame {
@@ -40,6 +46,8 @@ export function parseGame(game: LichessGame): ParsedGame {
       name: game.players.black.user?.name ?? null,
       elo: game.players.black.rating ?? null,
     },
-    speed: game.speed,
+    timeControl: game.clock
+      ? formatTimeControl(game.clock.initial, game.clock.increment)
+      : game.speed,
   }
 }

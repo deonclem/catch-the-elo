@@ -13,6 +13,7 @@ const LichessGameSchema = z.object({
   speed: z.string(),
   perf: z.string(),
   status: z.string(),
+  clock: z.object({ initial: z.number(), increment: z.number() }).optional(),
   players: z.object({
     white: LichessPlayerSchema,
     black: LichessPlayerSchema,
