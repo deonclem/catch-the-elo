@@ -27,6 +27,7 @@
 - Requires: queries on `game_results` + `profiles`
 
 ### Profile Page (`/profile`) — expand
+
 - Rating, highest score, history of past daily results
 - Requires: DAL queries on `game_results` filtered by user
 

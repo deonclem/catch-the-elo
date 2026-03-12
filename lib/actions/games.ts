@@ -7,8 +7,8 @@ import {
   getDailyGameResultForUser,
 } from '@/lib/dal/game_results'
 
-const submitDailyResultSchema = z.object({
-  dailyGameId: z.string().uuid(),
+const dailyResultSchema = z.object({
+  dailyGameId: z.uuid(),
   guessElo: z.number().int().min(100).max(3500),
   actualElo: z.number().int().min(100).max(3500),
   score: z.number().int().min(0).max(5000),
@@ -26,7 +26,7 @@ export async function submitDailyResult(
   } = await supabase.auth.getUser()
   if (!user) return
 
-  const parsed = submitDailyResultSchema.safeParse({
+  const parsed = dailyResultSchema.safeParse({
     dailyGameId,
     guessElo,
     actualElo,

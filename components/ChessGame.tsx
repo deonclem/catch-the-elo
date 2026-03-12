@@ -35,12 +35,14 @@ type Props = {
 }
 
 export function ChessGame({ game, dailyGameId, existingResult }: Props) {
-  const [submittedResult, setSubmittedResult] =
-    useState<ExistingResult | null>(null)
+  const [submittedResult, setSubmittedResult] = useState<ExistingResult | null>(
+    null
+  )
 
   const onResult = dailyGameId
     ? (guessElo: number, actualElo: number, score: number) => {
         setSubmittedResult({ guessElo, actualElo, score })
+        document.cookie = `dte_daily_result=${encodeURIComponent(JSON.stringify({ dailyGameId, guessElo, actualElo, score }))}; max-age=${60 * 60 * 48}; path=/; SameSite=Strict`
         submitDailyResult(dailyGameId, guessElo, actualElo, score).catch(
           () => {}
         )
@@ -91,7 +93,7 @@ export function ChessGame({ game, dailyGameId, existingResult }: Props) {
         onBack={goBack}
         onForward={goForward}
       />
-      {existingResult ?? submittedResult ? (
+      {(existingResult ?? submittedResult) ? (
         <AlreadyPlayedCard {...(existingResult ?? submittedResult)!} />
       ) : (
         result === null && (
