@@ -1,11 +1,13 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import dynamic from 'next/dynamic'
 import type { ParsedGame } from '@/lib/chess/parser'
 import { useChessGame } from '@/hooks/useChessGame'
+import { submitDailyResult } from '@/lib/actions/games'
 import { MoveNavigator } from './MoveNavigator'
 import { EloGuessForm } from './EloGuessForm'
+import { AlreadyPlayedCard } from './AlreadyPlayedCard'
 import { PlayerClock } from './PlayerClock'
 import { ResultDialog } from './dialogs/ResultDialog'
 
@@ -20,11 +22,31 @@ const ChessBoardClient = dynamic(
   }
 )
 
-type Props = {
-  game: ParsedGame
+type ExistingResult = {
+  guessElo: number
+  actualElo: number
+  score: number
 }
 
-export function ChessGame({ game }: Props) {
+type Props = {
+  game: ParsedGame
+  dailyGameId?: string
+  existingResult?: ExistingResult | null
+}
+
+export function ChessGame({ game, dailyGameId, existingResult }: Props) {
+  const [submittedResult, setSubmittedResult] =
+    useState<ExistingResult | null>(null)
+
+  const onResult = dailyGameId
+    ? (guessElo: number, actualElo: number, score: number) => {
+        setSubmittedResult({ guessElo, actualElo, score })
+        submitDailyResult(dailyGameId, guessElo, actualElo, score).catch(
+          () => {}
+        )
+      }
+    : undefined
+
   const {
     guess,
     setGuess,
@@ -39,7 +61,7 @@ export function ChessGame({ game }: Props) {
     moveLabel,
     whiteClock,
     blackClock,
-  } = useChessGame(game)
+  } = useChessGame(game, onResult)
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -69,12 +91,16 @@ export function ChessGame({ game }: Props) {
         onBack={goBack}
         onForward={goForward}
       />
-      {result === null && (
-        <EloGuessForm
-          guess={guess}
-          onChange={setGuess}
-          onSubmit={handleSubmit}
-        />
+      {existingResult ?? submittedResult ? (
+        <AlreadyPlayedCard {...(existingResult ?? submittedResult)!} />
+      ) : (
+        result === null && (
+          <EloGuessForm
+            guess={guess}
+            onChange={setGuess}
+            onSubmit={handleSubmit}
+          />
+        )
       )}
       <p className="text-muted-foreground text-xs">
         Use ← → arrow keys to navigate

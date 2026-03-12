@@ -9,7 +9,10 @@ type Result = {
   score: number
 }
 
-export function useChessGame(game: ParsedGame) {
+export function useChessGame(
+  game: ParsedGame,
+  onResult?: (guessElo: number, actualElo: number, score: number) => void
+) {
   const [currentMoveIndex, setCurrentMoveIndex] = useState(0)
   const [guess, setGuess] = useState('')
   const [result, setResult] = useState<Result | null>(null)
@@ -31,10 +34,9 @@ export function useChessGame(game: ParsedGame) {
     e.preventDefault()
     const averageElo = calculateAverageElo(game.white.elo, game.black.elo)
     if (averageElo === null || !guess) return
-    setResult({
-      actual: averageElo,
-      score: calculateScore(Number(guess), averageElo),
-    })
+    const score = calculateScore(Number(guess), averageElo)
+    setResult({ actual: averageElo, score })
+    onResult?.(Number(guess), averageElo, score)
   }
 
   const currentFen = game.positions[currentMoveIndex]!
