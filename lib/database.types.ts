@@ -20,6 +20,7 @@ export type Database = {
           created_at: string
           deleted_at: string | null
           id: string
+          lichess_id: string | null
           metadata: Json
           pgn: string
           scheduled_for: string
@@ -32,6 +33,7 @@ export type Database = {
           created_at?: string
           deleted_at?: string | null
           id?: string
+          lichess_id?: string | null
           metadata?: Json
           pgn: string
           scheduled_for: string
@@ -44,6 +46,7 @@ export type Database = {
           created_at?: string
           deleted_at?: string | null
           id?: string
+          lichess_id?: string | null
           metadata?: Json
           pgn?: string
           scheduled_for?: string

@@ -1,11 +1,12 @@
 'use client'
 
+import { useEffect } from 'react'
 import dynamic from 'next/dynamic'
 import type { ParsedGame } from '@/lib/chess/parser'
 import { useChessGame } from '@/hooks/useChessGame'
-import { GameInfoCard } from './GameInfoCard'
 import { MoveNavigator } from './MoveNavigator'
 import { EloGuessForm } from './EloGuessForm'
+import { PlayerClock } from './PlayerClock'
 import { ResultDialog } from './dialogs/ResultDialog'
 
 const ChessBoardClient = dynamic(
@@ -14,7 +15,7 @@ const ChessBoardClient = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="bg-muted aspect-square w-[95vw] max-w-[560px] animate-pulse rounded" />
+      <div className="bg-muted aspect-square w-[85vw] max-w-[504px] animate-pulse rounded" />
     ),
   }
 )
@@ -36,29 +37,27 @@ export function ChessGame({ game }: Props) {
     handleSubmit,
     currentFen,
     moveLabel,
+    whiteClock,
+    blackClock,
   } = useChessGame(game)
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if ((e.target as HTMLElement).tagName === 'INPUT') return
-    if (e.key === 'ArrowLeft') {
-      e.preventDefault()
-      goBack()
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if ((e.target as HTMLElement).tagName === 'INPUT') return
+      if (e.key === 'ArrowLeft') { e.preventDefault(); goBack() }
+      if (e.key === 'ArrowRight') { e.preventDefault(); goForward() }
     }
-    if (e.key === 'ArrowRight') {
-      e.preventDefault()
-      goForward()
-    }
-  }
+    document.addEventListener('keydown', onKeyDown)
+    return () => document.removeEventListener('keydown', onKeyDown)
+  }, [goBack, goForward])
 
   return (
     <div
-      tabIndex={0}
-      autoFocus
-      onKeyDown={handleKeyDown}
-      className="flex flex-col items-center gap-4 outline-none"
+      className="flex w-[85vw] max-w-[504px] flex-col items-center gap-4 outline-none"
     >
-      <GameInfoCard timeControl={game.timeControl} />
+      {blackClock && <PlayerClock color="black" clock={blackClock} />}
       <ChessBoardClient fen={currentFen} />
+      {whiteClock && <PlayerClock color="white" clock={whiteClock} />}
       <MoveNavigator
         moveLabel={moveLabel}
         canGoBack={canGoBack}
@@ -84,6 +83,7 @@ export function ChessGame({ game }: Props) {
           actual={result.actual}
           score={result.score}
           speed={game.timeControl}
+          lichessUrl={game.id ? `https://lichess.org/${game.id}` : undefined}
         />
       )}
     </div>

@@ -6,13 +6,12 @@ export function calculateAverageElo(
   return Math.round((whiteElo + blackElo) / 2)
 }
 
-const SIGMA_K = 0.25
-const SIGMA_MIN = 200
+const GRACE = 20 // within 20 pts = perfect score
+const SIGMA = 300 // controls how fast score decays beyond grace zone
 
 export function calculateScore(guess: number, actual: number): number {
-  const sigma = Math.max(actual * SIGMA_K, SIGMA_MIN)
-  const diff = Math.abs(guess - actual)
-  return Math.round(5000 * Math.exp(-((diff / sigma) ** 2)))
+  const diff = Math.max(0, Math.abs(guess - actual) - GRACE)
+  return Math.round(5000 * Math.exp(-((diff / SIGMA) ** 2)))
 }
 
 export function generateShareText(

@@ -2,9 +2,9 @@
 """
 import_games.py — NDJSON → Supabase
 
-Reads the curated NDJSON file produced by extract_games.py, assigns
-scheduled dates via round-robin interleaving across Elo brackets, and
-bulk-inserts the rows into the target Supabase table.
+Reads the curated NDJSON file produced by extract_games.py (games are
+already shuffled at extraction time) and assigns sequential scheduled_for
+dates starting from today, then bulk-inserts into the target Supabase table.
 
 Usage:
     # Populate daily_games (one game per calendar day)
@@ -29,9 +29,7 @@ are rejected by the UNIQUE constraint and logged, not silently swallowed.
 import argparse
 import json
 import os
-import random
 import sys
-from collections import defaultdict
 from datetime import date, timedelta
 from pathlib import Path
 
@@ -76,14 +74,43 @@ def create_supabase_client() -> Client:
 
 
 # ---------------------------------------------------------------------------
+# Duplicate detection
+# ---------------------------------------------------------------------------
+
+def fetch_existing_lichess_ids(client: Client, table: str) -> set[str]:
+    """Return the set of lichess_id values already present in the given table."""
+    result = client.table(table).select("lichess_id").execute()
+    return {row["lichess_id"] for row in result.data if row.get("lichess_id")}
+
+
+def filter_duplicates(games: list[dict], existing_ids: set[str]) -> tuple[list[dict], list[str]]:
+    """
+    Split games into (new_games, skipped_ids).
+    Logs a warning for each duplicate found.
+    """
+    new_games: list[dict] = []
+    skipped_ids: list[str] = []
+
+    for g in games:
+        lid = g["lichess_id"]
+        if lid in existing_ids:
+            print(f"  Warning: duplicate — {lid} already in DB, skipping", file=sys.stderr)
+            skipped_ids.append(lid)
+        else:
+            new_games.append(g)
+
+    return new_games, skipped_ids
+
+
+# ---------------------------------------------------------------------------
 # Date detection for daily mode
 # ---------------------------------------------------------------------------
 
 def detect_start_date(client: Client) -> date:
     """
     Return the next date to schedule in daily_games.
-    Queries MAX(scheduled_for) and adds one day; falls back to tomorrow
-    if the table is empty.
+    Queries MAX(scheduled_for) and adds one day; falls back to today
+    if the table is empty (so the first import always has a game for the current day).
     """
     result = (
         client.table(TABLE_DAILY)
@@ -100,9 +127,9 @@ def detect_start_date(client: Client) -> date:
         print(f"  Starting from: {next_date}", file=sys.stderr)
         return next_date
 
-    tomorrow = date.today() + timedelta(days=1)
-    print(f"  Table is empty — starting from tomorrow: {tomorrow}", file=sys.stderr)
-    return tomorrow
+    today = date.today()
+    print(f"  Table is empty — starting from today: {today}", file=sys.stderr)
+    return today
 
 
 # ---------------------------------------------------------------------------
@@ -138,50 +165,18 @@ def load_games(input_path: str) -> list[dict]:
             if not line:
                 continue
             try:
-                games.append(json.loads(line))
+                row = json.loads(line)
+                if not row.get("lichess_id"):
+                    sys.exit(
+                        f"Error: line {line_number} is missing 'lichess_id'. "
+                        "Re-run extract_games.py to regenerate the NDJSON file."
+                    )
+                games.append(row)
             except json.JSONDecodeError as exc:
                 print(f"Warning: skipping malformed line {line_number}: {exc}", file=sys.stderr)
 
     print(f"  Loaded {len(games)} games from {input_path}", file=sys.stderr)
     return games
-
-
-# ---------------------------------------------------------------------------
-# Round-robin interleaving for homogeneous daily scheduling
-# ---------------------------------------------------------------------------
-
-def interleave_by_bracket(games: list[dict]) -> list[dict]:
-    """
-    Group games by Elo bracket, shuffle within each bracket, then interleave
-    via round-robin across sorted brackets.
-
-    Result: consecutive days cycle through the full Elo spectrum, e.g.:
-      Day 1: ~800 elo
-      Day 2: ~900 elo
-      ...
-      Day 20: ~2700 elo
-      Day 21: ~800 elo (second game from that bracket)
-      ...
-
-    This ensures both homogeneous distribution and day-to-day variety.
-    """
-    buckets: dict[int, list[dict]] = defaultdict(list)
-    for game in games:
-        buckets[game["bracket"]].append(game)
-
-    # Shuffle within each bracket for intra-bracket randomness
-    for bracket in buckets:
-        random.shuffle(buckets[bracket])
-
-    # Round-robin across sorted brackets
-    sorted_brackets = sorted(buckets.keys())
-    ordered: list[dict] = []
-    while any(buckets[b] for b in sorted_brackets):
-        for b in sorted_brackets:
-            if buckets[b]:
-                ordered.append(buckets[b].pop(0))
-
-    return ordered
 
 
 # ---------------------------------------------------------------------------
@@ -205,12 +200,13 @@ def insert_daily(client: Client, games: list[dict], start_date: date) -> None:
                 "target_elo":    g["target_elo"],
                 "white_elo":     g["white_elo"],
                 "black_elo":     g["black_elo"],
+                "lichess_id":    g["lichess_id"],
                 "metadata":      g["metadata"],
             }
             for j, g in enumerate(batch_games)
         ]
 
-        client.table(TABLE_DAILY).insert(batch).execute()
+        client.table(TABLE_DAILY).upsert(batch, ignore_duplicates=True).execute()
         inserted += len(batch)
         print(f"  Inserted rows {i + 1}–{inserted} / {total}", file=sys.stderr, flush=True)
 
@@ -228,12 +224,13 @@ def insert_ranked(client: Client, games: list[dict]) -> None:
                 "target_elo": g["target_elo"],
                 "white_elo":  g["white_elo"],
                 "black_elo":  g["black_elo"],
+                "lichess_id": g["lichess_id"],
                 "metadata":   g["metadata"],
             }
             for g in batch_games
         ]
 
-        client.table(TABLE_RANKED).insert(batch).execute()
+        client.table(TABLE_RANKED).upsert(batch, ignore_duplicates=True).execute()
         inserted += len(batch)
         print(f"  Inserted rows {i + 1}–{inserted} / {total}", file=sys.stderr, flush=True)
 
@@ -242,16 +239,27 @@ def insert_ranked(client: Client, games: list[dict]) -> None:
 # Summary
 # ---------------------------------------------------------------------------
 
-def print_summary(games: list[dict], mode: str, start_date: date | None = None) -> None:
+def print_summary(
+    games: list[dict],
+    mode: str,
+    start_date: date | None = None,
+    skipped_ids: list[str] | None = None,
+) -> None:
+    from collections import Counter
+
     total = len(games)
-    print(f"\n✓ Inserted {total} rows into {TABLE_DAILY if mode == 'daily' else TABLE_RANKED}")
+    table = TABLE_DAILY if mode == "daily" else TABLE_RANKED
+    print(f"\n✓ Inserted {total} rows into {table}")
 
     if mode == "daily" and start_date is not None:
         end_date = start_date + timedelta(days=total - 1)
         print(f"  Date range: {start_date} → {end_date}")
 
-    # Elo distribution breakdown
-    from collections import Counter
+    if skipped_ids:
+        print(f"\n⚠ Skipped {len(skipped_ids)} duplicate(s) already in DB:")
+        for lid in skipped_ids:
+            print(f"  - {lid}")
+
     bracket_counts = Counter(g["bracket"] for g in games)
     print("\nElo distribution:")
     for bracket in sorted(bracket_counts.keys()):
@@ -294,22 +302,29 @@ def main() -> None:
     if not games:
         sys.exit("Error: no games found in input file.")
 
-    # --- Interleave for scheduling variety ---
-    print("\nInterleaving by Elo bracket (round-robin)...", file=sys.stderr)
-    ordered_games = interleave_by_bracket(games)
+    # --- Check for duplicates already in the target table ---
+    target_table = TABLE_DAILY if args.mode == "daily" else TABLE_RANKED
+    print(f"\nChecking for duplicates in {target_table}...", file=sys.stderr)
+    existing_ids = fetch_existing_lichess_ids(client, target_table)
+    games, skipped_ids = filter_duplicates(games, existing_ids)
+    if not games:
+        print(f"\n⚠ All {len(skipped_ids)} games already in DB — nothing to import.", file=sys.stderr)
+        for lid in skipped_ids:
+            print(f"  - {lid}", file=sys.stderr)
+        sys.exit(0)
 
-    # --- Insert ---
+    # --- Insert (ordering was fixed at extraction time by extract_games.py) ---
     if args.mode == "daily":
         print("\nDetecting start date...", file=sys.stderr)
         start_date = detect_start_date(client)
-        print(f"\nInserting {len(ordered_games)} rows into {TABLE_DAILY}...", file=sys.stderr)
-        insert_daily(client, ordered_games, start_date)
-        print_summary(ordered_games, "daily", start_date)
+        print(f"\nInserting {len(games)} rows into {TABLE_DAILY}...", file=sys.stderr)
+        insert_daily(client, games, start_date)
+        print_summary(games, "daily", start_date, skipped_ids)
 
     else:  # ranked
-        print(f"\nInserting {len(ordered_games)} rows into {TABLE_RANKED}...", file=sys.stderr)
-        insert_ranked(client, ordered_games)
-        print_summary(ordered_games, "ranked")
+        print(f"\nInserting {len(games)} rows into {TABLE_RANKED}...", file=sys.stderr)
+        insert_ranked(client, games)
+        print_summary(games, "ranked", skipped_ids=skipped_ids)
 
 
 if __name__ == "__main__":

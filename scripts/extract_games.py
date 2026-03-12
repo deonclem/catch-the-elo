@@ -13,19 +13,56 @@ Usage:
 The NDJSON file can be safely re-processed or debugged without re-scanning
 the archive. One JSON object per line:
     {"pgn": "...", "white_elo": 1800, "black_elo": 1750, "target_elo": 1775,
-     "bracket": 1700, "metadata": {...}}
+     "bracket": 1700, "lichess_id": "AbCdEfGh", "metadata": {...}}
 
-No database access — this script is pure extraction + filtering.
+Deduplication against the database happens here — games whose lichess_id is
+already in daily_games are skipped before being added to any bracket bucket.
+Credentials are loaded from scripts/.env (see scripts/.env.example).
 """
 
 import argparse
 import io
 import json
 import math
+import os
+import random
 import re
 import sys
+from pathlib import Path
 
 import chess.pgn
+from dotenv import load_dotenv
+from supabase import create_client, Client
+
+
+# ---------------------------------------------------------------------------
+# Supabase client + dedup
+# ---------------------------------------------------------------------------
+
+TABLE_DAILY = "daily_games"
+
+
+def create_supabase_client() -> Client:
+    """Load credentials from scripts/.env and return an authenticated client."""
+    env_path = Path(__file__).parent / ".env"
+    load_dotenv(dotenv_path=env_path)
+
+    url = os.getenv("SUPABASE_URL")
+    key = os.getenv("SUPABASE_SECRET_DB_KEY")
+
+    if not url or not key:
+        sys.exit(
+            "Error: SUPABASE_URL and SUPABASE_SECRET_DB_KEY must be set in scripts/.env\n"
+            "Copy scripts/.env.example → scripts/.env and fill in your values."
+        )
+
+    return create_client(url, key)
+
+
+def fetch_existing_lichess_ids(client: Client) -> set[str]:
+    """Return the set of lichess_id values already present in daily_games."""
+    result = client.table(TABLE_DAILY).select("lichess_id").execute()
+    return {row["lichess_id"] for row in result.data if row.get("lichess_id")}
 
 
 # ---------------------------------------------------------------------------
@@ -33,10 +70,10 @@ import chess.pgn
 # ---------------------------------------------------------------------------
 
 ELO_MIN = 800
-ELO_MAX = 2800
+ELO_MAX = 2500
 BRACKET_SIZE = 100
 
-# 20 brackets: [800, 900, 1000, ..., 2700]
+# 21 brackets: [400, 500, 600, ..., 2400]
 BRACKETS = list(range(ELO_MIN, ELO_MAX, BRACKET_SIZE))
 
 # ---------------------------------------------------------------------------
@@ -90,9 +127,9 @@ def passes_filters(game: chess.pgn.Game) -> bool:
     """
     headers = game.headers
 
-    # --- Time control: Blitz or Rapid only ---
+    # --- Time control: Rapid only ---
     event = headers.get("Event", "").lower()
-    if "blitz" not in event and "rapid" not in event:
+    if "rapid" not in event:
         return False
 
     # --- Result must be decisive or drawn ---
@@ -138,10 +175,13 @@ def build_row(game: chess.pgn.Game) -> dict:
 
     scrubbed = scrub_pgn(str(game))
 
+    site_url = headers.get("Site", "")
+    lichess_id = site_url.rsplit("/", 1)[-1] if "/" in site_url else ""
+
     metadata = {
         "white_name":   headers.get("White", "?"),
         "black_name":   headers.get("Black", "?"),
-        "lichess_url":  headers.get("Site", ""),
+        "lichess_url":  site_url,
         "event":        headers.get("Event", ""),
         "opening":      headers.get("Opening", ""),
         "eco":          headers.get("ECO", ""),
@@ -154,6 +194,7 @@ def build_row(game: chess.pgn.Game) -> dict:
         "black_elo":  black_elo,
         "target_elo": avg_elo,
         "bracket":    bracket,
+        "lichess_id": lichess_id,
         "metadata":   metadata,
     }
 
@@ -221,6 +262,12 @@ def main() -> None:
         file=sys.stderr,
     )
 
+    # Fetch IDs already in DB so we never extract the same game twice
+    print("\nConnecting to Supabase to fetch existing game IDs...", file=sys.stderr)
+    client = create_supabase_client()
+    existing_ids = fetch_existing_lichess_ids(client)
+    print(f"  {len(existing_ids)} games already in DB — will skip them", file=sys.stderr)
+
     # Initialise one empty bucket per Elo bracket
     buckets: dict[int, list[dict]] = {b: [] for b in BRACKETS}
 
@@ -260,18 +307,26 @@ def main() -> None:
             row = build_row(game)
             bracket = row["bracket"]
 
+            # Skip games with no Lichess ID (shouldn't happen — means a bug in build_row)
+            if not row["lichess_id"]:
+                continue
+
+            # Skip games already in the DB
+            if row["lichess_id"] in existing_ids:
+                continue
+
             # Only add if this bracket still needs more games
             if len(buckets[bracket]) < games_per_bracket:
                 buckets[bracket].append(row)
                 scans_since_collect = 0
 
-    # Write all collected games to NDJSON (one JSON object per line)
-    total_written = 0
+    # Flatten all buckets, shuffle for true random day-to-day Elo variety, then write
+    all_games = [row for b in sorted(buckets.keys()) for row in buckets[b]]
+    random.shuffle(all_games)
+
     with open(args.output, "w", encoding="utf-8") as f:
-        for b in sorted(buckets.keys()):
-            for row in buckets[b]:
-                f.write(json.dumps(row, ensure_ascii=False) + "\n")
-                total_written += 1
+        for row in all_games:
+            f.write(json.dumps(row, ensure_ascii=False) + "\n")
 
     print_summary(games_scanned, buckets, args.output)
 

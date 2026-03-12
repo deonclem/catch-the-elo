@@ -20,12 +20,14 @@ const LichessGameSchema = z.object({
   }),
   winner: z.enum(['white', 'black']).optional(),
   moves: z.string().min(1),
+  // Remaining time in centiseconds after each move (White: even indices, Black: odd indices)
+  clocks: z.array(z.number()).optional(),
 })
 
 export type LichessGame = z.infer<typeof LichessGameSchema>
 
 const LICHESS_URL =
-  'https://lichess.org/api/games/user/DrNykterstein?max=20&rated=true&moves=true'
+  'https://lichess.org/api/games/user/DrNykterstein?max=20&rated=true&moves=true&clocks=true'
 
 export async function fetchRandomLichessGame(): Promise<LichessGame> {
   const response = await fetch(LICHESS_URL, {

@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -17,6 +18,7 @@ type Props = {
   actual: number
   score: number
   speed: string
+  lichessUrl?: string
 }
 
 export function ResultDialog({
@@ -26,12 +28,16 @@ export function ResultDialog({
   actual,
   score,
   speed,
+  lichessUrl,
 }: Props) {
   const diff = Math.abs(guess - actual)
+  const [copied, setCopied] = useState(false)
 
   const handleCopy = () => {
     const text = generateShareText(guess, actual, score, speed)
     void navigator.clipboard.writeText(text)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
   }
 
   return (
@@ -70,8 +76,15 @@ export function ResultDialog({
             ))}
           </div>
           <Button onClick={handleCopy} variant="outline" className="w-full">
-            Copy result
+            {copied ? 'Copied to clipboard!' : 'Copy result'}
           </Button>
+          {lichessUrl && (
+            <Button variant="ghost" size="sm" asChild>
+              <a href={lichessUrl} target="_blank" rel="noopener noreferrer">
+                View on Lichess ↗
+              </a>
+            </Button>
+          )}
         </div>
       </DialogContent>
     </Dialog>
