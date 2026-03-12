@@ -1,8 +1,35 @@
-export default function ProfilePage() {
+import { redirect } from 'next/navigation'
+import { createClient } from '@/utils/supabase/server'
+import { getProfileByUserId } from '@/lib/dal/profiles'
+import { signOut } from '@/lib/actions/auth'
+import { Button } from '@/components/ui/button'
+
+export default async function ProfilePage() {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) redirect('/auth')
+
+  const profile = await getProfileByUserId(user.id)
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center gap-2 p-4">
-      <h1 className="text-2xl font-bold">Profile</h1>
-      <p className="text-muted-foreground">Coming soon.</p>
+    <main className="flex min-h-screen flex-col items-center justify-center p-4">
+      <div className="border-border bg-card flex w-full max-w-sm flex-col gap-6 rounded-xl border p-6">
+        <div className="flex flex-col gap-1">
+          <h1 className="text-xl font-semibold">
+            {profile?.username ?? 'Anonymous'}
+          </h1>
+          <p className="text-muted-foreground text-sm">{user.email}</p>
+        </div>
+
+        <form action={signOut}>
+          <Button type="submit" variant="outline" className="w-full">
+            Sign out
+          </Button>
+        </form>
+      </div>
     </main>
   )
 }
