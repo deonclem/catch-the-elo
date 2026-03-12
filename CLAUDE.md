@@ -1,5 +1,8 @@
 # CLAUDE.md - Catch The Elo
 
+@documents/platform-docs.md
+@documents/roadmap.md
+
 ## 🎯 Project Vision
 
 A competitive chess web application where players guess the average Elo rating of a match based on PGN data.
