@@ -69,7 +69,7 @@ def fetch_existing_lichess_ids(client: Client) -> set[str]:
 # Elo bracket configuration
 # ---------------------------------------------------------------------------
 
-ELO_MIN = 800
+ELO_MIN = 400
 ELO_MAX = 2500
 BRACKET_SIZE = 100
 

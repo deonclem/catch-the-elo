@@ -56,6 +56,62 @@ export type Database = {
         }
         Relationships: []
       }
+      game_results: {
+        Row: {
+          actual_elo: number
+          created_at: string
+          daily_game_id: string | null
+          deleted_at: string | null
+          guess_elo: number
+          id: string
+          mode: string
+          ranked_game_id: string | null
+          rating_after: number | null
+          rating_change: number | null
+          score: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          actual_elo: number
+          created_at?: string
+          daily_game_id?: string | null
+          deleted_at?: string | null
+          guess_elo: number
+          id?: string
+          mode: string
+          ranked_game_id?: string | null
+          rating_after?: number | null
+          rating_change?: number | null
+          score: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          actual_elo?: number
+          created_at?: string
+          daily_game_id?: string | null
+          deleted_at?: string | null
+          guess_elo?: number
+          id?: string
+          mode?: string
+          ranked_game_id?: string | null
+          rating_after?: number | null
+          rating_change?: number | null
+          score?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'game_results_daily_game_id_fkey'
+            columns: ['daily_game_id']
+            isOneToOne: false
+            referencedRelation: 'daily_games'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null

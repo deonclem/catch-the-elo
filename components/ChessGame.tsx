@@ -44,17 +44,21 @@ export function ChessGame({ game }: Props) {
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if ((e.target as HTMLElement).tagName === 'INPUT') return
-      if (e.key === 'ArrowLeft') { e.preventDefault(); goBack() }
-      if (e.key === 'ArrowRight') { e.preventDefault(); goForward() }
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault()
+        goBack()
+      }
+      if (e.key === 'ArrowRight') {
+        e.preventDefault()
+        goForward()
+      }
     }
     document.addEventListener('keydown', onKeyDown)
     return () => document.removeEventListener('keydown', onKeyDown)
   }, [goBack, goForward])
 
   return (
-    <div
-      className="flex w-[85vw] max-w-[504px] flex-col items-center gap-4 outline-none"
-    >
+    <div className="flex w-[85vw] max-w-[504px] flex-col items-center gap-4 outline-none">
       {blackClock && <PlayerClock color="black" clock={blackClock} />}
       <ChessBoardClient fen={currentFen} />
       {whiteClock && <PlayerClock color="white" clock={whiteClock} />}
