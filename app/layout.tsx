@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import { Navbar } from '@/components/layout/Navbar'
 import { createClient } from '@/utils/supabase/server'
+import { getProfileByUserId, computeActiveStreak } from '@/lib/dal/profiles'
 import './globals.css'
 
 const geistSans = Geist({
@@ -29,12 +30,15 @@ export default async function RootLayout({
     data: { user },
   } = await supabase.auth.getUser()
 
+  const profile = user ? await getProfileByUserId(user.id) : null
+  const streak = computeActiveStreak(profile)
+
   return (
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <Navbar isLoggedIn={user !== null} />
+        <Navbar isLoggedIn={user !== null} streak={streak} />
         <div className="pb-14 md:pt-16 md:pb-0">{children}</div>
       </body>
     </html>

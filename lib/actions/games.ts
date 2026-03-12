@@ -6,6 +6,7 @@ import {
   insertGameResult,
   getDailyGameResultForUser,
 } from '@/lib/dal/game_results'
+import { updateStreak } from '@/lib/dal/profiles'
 
 const dailyResultSchema = z.object({
   dailyGameId: z.uuid(),
@@ -44,4 +45,5 @@ export async function submitDailyResult(
     actualElo: parsed.data.actualElo,
     score: parsed.data.score,
   })
+  await updateStreak(user.id)
 }

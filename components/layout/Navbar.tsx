@@ -23,7 +23,13 @@ function isActive(pathname: string, href: string): boolean {
   return href === '/' ? pathname === '/' : pathname.startsWith(href)
 }
 
-export function Navbar({ isLoggedIn }: { isLoggedIn: boolean }) {
+export function Navbar({
+  isLoggedIn,
+  streak = 0,
+}: {
+  isLoggedIn: boolean
+  streak?: number
+}) {
   const pathname = usePathname()
   const profileHref = isLoggedIn ? '/profile' : '/auth'
 
@@ -53,13 +59,18 @@ export function Navbar({ isLoggedIn }: { isLoggedIn: boolean }) {
             ))}
           </nav>
 
-          <Button variant="outline" size="sm" asChild>
-            {isLoggedIn ? (
-              <Link href="/profile">My Profile</Link>
-            ) : (
-              <Link href="/auth">Sign In</Link>
+          <div className="flex items-center gap-3">
+            {isLoggedIn && streak > 0 && (
+              <span className="text-sm font-medium">🔥 {streak}</span>
             )}
-          </Button>
+            <Button variant="outline" size="sm" asChild>
+              {isLoggedIn ? (
+                <Link href="/profile">My Profile</Link>
+              ) : (
+                <Link href="/auth">Sign In</Link>
+              )}
+            </Button>
+          </div>
         </div>
       </header>
 

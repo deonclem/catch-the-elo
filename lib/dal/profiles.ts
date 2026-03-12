@@ -5,6 +5,19 @@ import type { Tables } from '@/lib/database.types'
 
 export type Profile = Tables<'profiles'>
 
+function utcDateString(offsetDays = 0): string {
+  return new Date(Date.now() + offsetDays * 86400000)
+    .toISOString()
+    .split('T')[0]
+}
+
+export function computeActiveStreak(profile: Profile | null): number {
+  if (!profile || !profile.streak_last_played) return 0
+  return profile.streak_last_played >= utcDateString(-1)
+    ? profile.current_streak
+    : 0
+}
+
 export async function getProfiles(): Promise<Profile[]> {
   const supabase = await createClient()
   const { data, error } = await supabase.from('profiles').select('*')
@@ -39,4 +52,29 @@ export async function upsertUsername(
     throw error
   }
   return { error: null }
+}
+
+export async function updateStreak(userId: string): Promise<void> {
+  const supabase = await createClient()
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('current_streak, best_streak, streak_last_played')
+    .eq('id', userId)
+    .single()
+
+  if (!profile) return
+
+  const yesterday = utcDateString(-1)
+  const newStreak =
+    profile.streak_last_played === yesterday ? profile.current_streak + 1 : 1
+  const newBest = Math.max(profile.best_streak, newStreak)
+
+  await supabase
+    .from('profiles')
+    .update({
+      current_streak: newStreak,
+      best_streak: newBest,
+      streak_last_played: utcDateString(),
+    })
+    .eq('id', userId)
 }
