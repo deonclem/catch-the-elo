@@ -54,6 +54,61 @@ export async function upsertUsername(
   return { error: null }
 }
 
+export type StreakLeaderboardEntry = {
+  rank: number
+  userId: string
+  username: string | null
+  streak: number
+}
+
+export type RatingLeaderboardEntry = {
+  rank: number
+  userId: string
+  username: string | null
+  rating: number
+}
+
+export async function getStreakLeaderboard(): Promise<
+  StreakLeaderboardEntry[]
+> {
+  const supabase = await createClient()
+  const yesterday = utcDateString(-1)
+  const { data } = await supabase
+    .from('profiles')
+    .select('id, username, current_streak')
+    .gte('streak_last_played', yesterday)
+    .gt('current_streak', 0)
+    .is('deleted_at', null)
+    .order('current_streak', { ascending: false })
+    .limit(10)
+
+  return (data ?? []).map((p, i) => ({
+    rank: i + 1,
+    userId: p.id,
+    username: p.username,
+    streak: p.current_streak,
+  }))
+}
+
+export async function getRatingLeaderboard(): Promise<
+  RatingLeaderboardEntry[]
+> {
+  const supabase = await createClient()
+  const { data } = await supabase
+    .from('profiles')
+    .select('id, username, rating')
+    .is('deleted_at', null)
+    .order('rating', { ascending: false })
+    .limit(10)
+
+  return (data ?? []).map((p, i) => ({
+    rank: i + 1,
+    userId: p.id,
+    username: p.username,
+    rating: p.rating,
+  }))
+}
+
 export async function updateStreak(userId: string): Promise<void> {
   const supabase = await createClient()
   const { data: profile } = await supabase

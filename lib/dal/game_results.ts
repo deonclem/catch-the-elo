@@ -1,6 +1,15 @@
 import 'server-only'
 import { createClient } from '@/utils/supabase/server'
 
+export type LeaderboardEntry = {
+  rank: number
+  userId: string
+  username: string | null
+  score: number
+  guessElo: number
+  actualElo: number
+}
+
 type GameResultData = {
   userId: string
   dailyGameId: string
@@ -46,4 +55,38 @@ export async function getDailyGameResultForUser(
     actualElo: data.actual_elo,
     score: data.score,
   }
+}
+
+export async function getDailyLeaderboard(
+  dailyGameId: string
+): Promise<LeaderboardEntry[]> {
+  const supabase = await createClient()
+
+  const { data: results } = await supabase
+    .from('game_results')
+    .select('user_id, score, guess_elo, actual_elo')
+    .eq('daily_game_id', dailyGameId)
+    .eq('mode', 'daily')
+    .is('deleted_at', null)
+    .order('score', { ascending: false })
+    .limit(50)
+
+  if (!results || results.length === 0) return []
+
+  const userIds = results.map((r) => r.user_id)
+  const { data: profiles } = await supabase
+    .from('profiles')
+    .select('id, username')
+    .in('id', userIds)
+
+  const usernameMap = new Map(profiles?.map((p) => [p.id, p.username]) ?? [])
+
+  return results.map((r, i) => ({
+    rank: i + 1,
+    userId: r.user_id,
+    username: usernameMap.get(r.user_id) ?? null,
+    score: r.score,
+    guessElo: r.guess_elo,
+    actualElo: r.actual_elo,
+  }))
 }
