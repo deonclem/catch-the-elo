@@ -1,5 +1,5 @@
-import { ChessGame } from '@/components/ChessGame'
-import type { DayEntry } from '@/components/DailyCalendar'
+import { ChessGame } from './_components/ChessGame'
+import type { DayEntry } from './_components/DailyCalendar'
 import { parseDailyGame } from '@/lib/chess/parser'
 import {
   getDailyGameResultForUser,

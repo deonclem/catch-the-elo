@@ -276,7 +276,7 @@ def main() -> None:
 
     games_scanned = 0
     scans_since_collect = 0  # incremented each scan, reset when a new game is collected
-    STALL_LIMIT = 50_000     # give up if no new game collected in this many scans
+    STALL_LIMIT = 1_000_000     # give up if no new game collected in this many scans
 
     # Stream PGN from stdin — memory-efficient even for multi-GB archives
     with io.TextIOWrapper(sys.stdin.buffer, encoding="utf-8", errors="replace") as pgn_stream:

@@ -1,7 +1,7 @@
 'use client'
 
 import { CheckCircle2, Clock } from 'lucide-react'
-import { ScoreBar } from '@/components/ScoreBar'
+import { ScoreBar } from './ScoreBar'
 
 type Props = {
   guessElo: number

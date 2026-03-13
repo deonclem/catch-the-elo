@@ -1,5 +1,5 @@
-import { SignInForm } from '@/components/SignInForm'
-import { SignUpForm } from '@/components/SignUpForm'
+import { SignInForm } from './_components/SignInForm'
+import { SignUpForm } from './_components/SignUpForm'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'

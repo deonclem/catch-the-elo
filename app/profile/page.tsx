@@ -1,5 +1,5 @@
-import { ProfileCalendar } from '@/components/ProfileCalendar'
-import { DeleteAccountDialog } from '@/components/dialogs/DeleteAccountDialog'
+import { ProfileCalendar } from './_components/ProfileCalendar'
+import { DeleteAccountDialog } from './_components/DeleteAccountDialog'
 import { Button } from '@/components/ui/button'
 import { signOut } from '@/lib/actions/auth'
 import { getUserDailyHistory } from '@/lib/dal/game_results'

@@ -13,7 +13,7 @@ import { AlreadyPlayedCard } from './AlreadyPlayedCard'
 import { PlayerClock } from './PlayerClock'
 import { GameInfoCard } from './GameInfoCard'
 import { DailyCalendar } from './DailyCalendar'
-import { ResultDialog } from './dialogs/ResultDialog'
+import { ResultDialog } from './ResultDialog'
 
 const ChessBoardClient = dynamic(
   () =>

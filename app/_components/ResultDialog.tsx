@@ -9,7 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { ScoreBar } from '@/components/ScoreBar'
+import { ScoreBar } from './ScoreBar'
 import { generateShareText } from '@/lib/chess/scoring'
 
 type Props = {
