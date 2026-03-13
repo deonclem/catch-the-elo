@@ -76,6 +76,29 @@ export async function getResultsForDailyGames(
   return map
 }
 
+export type DailyHistoryEntry = {
+  date: string
+  score: number
+}
+
+export async function getUserDailyHistory(
+  userId: string
+): Promise<DailyHistoryEntry[]> {
+  const supabase = await createClient()
+  const { data } = await supabase
+    .from('game_results')
+    .select('score, daily_games!inner(scheduled_for)')
+    .eq('user_id', userId)
+    .eq('mode', 'daily')
+    .is('deleted_at', null)
+    .order('created_at', { ascending: false })
+
+  return (data ?? []).map((row) => ({
+    date: (row.daily_games as { scheduled_for: string }).scheduled_for,
+    score: row.score,
+  }))
+}
+
 export async function getDailyLeaderboard(
   dailyGameId: string
 ): Promise<LeaderboardEntry[]> {
