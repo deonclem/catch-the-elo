@@ -1,5 +1,6 @@
 import { createClient } from '@/utils/supabase/server'
 import { getDailyGame } from '@/lib/dal/games'
+import { Target, Flame, Swords } from 'lucide-react'
 import {
   getDailyLeaderboard,
   type LeaderboardEntry,
@@ -10,12 +11,30 @@ import {
   type StreakLeaderboardEntry,
   type RatingLeaderboardEntry,
 } from '@/lib/dal/profiles'
+import { cn } from '@/lib/utils'
 
-const MEDALS = ['🥇', '🥈', '🥉']
-
-function RankCell({ rank }: { rank: number }) {
-  if (rank <= 3) return <span>{MEDALS[rank - 1]}</span>
-  return <span className="text-muted-foreground tabular-nums">{rank}</span>
+function RankBadge({ rank }: { rank: number }) {
+  if (rank === 1)
+    return (
+      <span className="bg-primary/20 text-primary inline-flex size-6 items-center justify-center rounded-full text-xs font-bold">
+        1
+      </span>
+    )
+  if (rank === 2)
+    return (
+      <span className="bg-muted text-muted-foreground inline-flex size-6 items-center justify-center rounded-full text-xs font-bold">
+        2
+      </span>
+    )
+  if (rank === 3)
+    return (
+      <span className="bg-muted inline-flex size-6 items-center justify-center rounded-full text-xs font-bold text-[oklch(0.65_0.10_50)]">
+        3
+      </span>
+    )
+  return (
+    <span className="text-muted-foreground text-xs tabular-nums">{rank}</span>
+  )
 }
 
 function Panel({
@@ -25,24 +44,23 @@ function Panel({
   children,
 }: {
   title: string
-  icon: string
+  icon: React.ReactNode
   empty: boolean
   children: React.ReactNode
 }) {
   return (
-    <div className="border-border flex flex-col overflow-hidden rounded-xl border">
-      <div className="bg-muted/50 border-b px-4 py-3">
-        <h2 className="text-sm font-semibold">
-          {icon} {title}
-        </h2>
+    <div className="border-border bg-card flex flex-col overflow-hidden rounded-xl border">
+      <div className="border-border bg-muted/40 flex items-center gap-2 border-b px-4 py-3">
+        <span className="text-primary">{icon}</span>
+        <h2 className="text-sm font-semibold">{title}</h2>
       </div>
       {empty ? (
-        <p className="text-muted-foreground px-4 py-6 text-center text-sm">
+        <p className="text-muted-foreground px-4 py-8 text-center text-sm">
           No entries yet
         </p>
       ) : (
         <table className="w-full text-sm">
-          <tbody className="divide-y">{children}</tbody>
+          <tbody className="divide-border divide-y">{children}</tbody>
         </table>
       )}
     </div>
@@ -59,14 +77,14 @@ function DailyRow({
   const offBy = Math.abs(entry.guessElo - entry.actualElo)
   return (
     <tr
-      className={
+      className={cn(
         isCurrentUser
           ? 'bg-primary/10 font-semibold'
           : 'hover:bg-muted/50 transition-colors'
-      }
+      )}
     >
-      <td className="py-2.5 pr-2 pl-4 text-center text-xs">
-        <RankCell rank={entry.rank} />
+      <td className="py-2.5 pr-2 pl-4 text-center">
+        <RankBadge rank={entry.rank} />
       </td>
       <td className="py-2.5 pr-2">
         {entry.username ?? 'Anonymous'}
@@ -91,14 +109,14 @@ function StreakRow({
 }) {
   return (
     <tr
-      className={
+      className={cn(
         isCurrentUser
           ? 'bg-primary/10 font-semibold'
           : 'hover:bg-muted/50 transition-colors'
-      }
+      )}
     >
-      <td className="py-2.5 pr-2 pl-4 text-center text-xs">
-        <RankCell rank={entry.rank} />
+      <td className="py-2.5 pr-2 pl-4 text-center">
+        <RankBadge rank={entry.rank} />
       </td>
       <td className="py-2.5 pr-2">
         {entry.username ?? 'Anonymous'}
@@ -106,7 +124,12 @@ function StreakRow({
           <span className="text-primary ml-1 text-xs font-normal">(you)</span>
         )}
       </td>
-      <td className="py-2.5 pr-4 text-right tabular-nums">🔥 {entry.streak}</td>
+      <td className="py-2.5 pr-4 text-right tabular-nums">
+        <span className="flex items-center justify-end gap-1">
+          <Flame className="text-primary size-3.5" />
+          {entry.streak}
+        </span>
+      </td>
     </tr>
   )
 }
@@ -120,14 +143,14 @@ function RatingRow({
 }) {
   return (
     <tr
-      className={
+      className={cn(
         isCurrentUser
           ? 'bg-primary/10 font-semibold'
           : 'hover:bg-muted/50 transition-colors'
-      }
+      )}
     >
-      <td className="py-2.5 pr-2 pl-4 text-center text-xs">
-        <RankCell rank={entry.rank} />
+      <td className="py-2.5 pr-2 pl-4 text-center">
+        <RankBadge rank={entry.rank} />
       </td>
       <td className="py-2.5 pr-2">
         {entry.username ?? 'Anonymous'}
@@ -163,14 +186,18 @@ export default async function LeaderboardPage() {
   })
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-4xl flex-col gap-6 p-4 pb-20 md:pb-6">
+    <main className="mx-auto flex min-h-screen max-w-4xl flex-col gap-6 p-4 pb-24 md:pb-8">
       <div className="pt-4">
         <h1 className="text-2xl font-bold">Leaderboard</h1>
         <p className="text-muted-foreground text-sm">{today}</p>
       </div>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-        <Panel title="Today's Best" icon="🎯" empty={dailyEntries.length === 0}>
+        <Panel
+          title="Today's Best"
+          icon={<Target className="size-4" />}
+          empty={dailyEntries.length === 0}
+        >
           {dailyEntries.map((entry) => (
             <DailyRow
               key={entry.userId}
@@ -180,7 +207,11 @@ export default async function LeaderboardPage() {
           ))}
         </Panel>
 
-        <Panel title="Top Streaks" icon="🔥" empty={streakEntries.length === 0}>
+        <Panel
+          title="Top Streaks"
+          icon={<Flame className="size-4" />}
+          empty={streakEntries.length === 0}
+        >
           {streakEntries.map((entry) => (
             <StreakRow
               key={entry.userId}
@@ -190,7 +221,11 @@ export default async function LeaderboardPage() {
           ))}
         </Panel>
 
-        <Panel title="Top Ratings" icon="⚔️" empty={ratingEntries.length === 0}>
+        <Panel
+          title="Top Ratings"
+          icon={<Swords className="size-4" />}
+          empty={ratingEntries.length === 0}
+        >
           {ratingEntries.map((entry) => (
             <RatingRow
               key={entry.userId}

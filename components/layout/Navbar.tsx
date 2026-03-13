@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Zap, Swords, Trophy, User } from 'lucide-react'
+import { Zap, Swords, Trophy, User, Flame } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
@@ -35,35 +35,50 @@ export function Navbar({
 
   return (
     <>
-      {/* Desktop: sticky top navbar */}
-      <header className="bg-background fixed inset-x-0 top-0 z-50 hidden h-16 items-center border-b px-6 md:flex">
+      {/* Desktop: sticky top navbar with glassmorphism */}
+      <header className="border-border/60 bg-background/80 fixed inset-x-0 top-0 z-50 hidden h-16 items-center border-b px-6 backdrop-blur-md md:flex">
         <div className="flex w-full items-center justify-between">
-          <Link href="/" className="text-lg font-bold tracking-tight">
-            CatchTheElo
+          <Link href="/" className="flex items-center gap-2">
+            <span className="text-lg font-bold tracking-tight">
+              <span className="from-primary to-primary-end bg-gradient-to-r bg-clip-text text-transparent">
+                Catch
+              </span>
+              <span className="text-foreground"> The Elo</span>
+            </span>
           </Link>
 
-          <nav className="flex items-center gap-6">
+          <nav className="flex items-center gap-8">
             {NAV_LINKS.map(({ href, label }) => (
               <Link
                 key={href}
                 href={href}
                 className={cn(
-                  'hover:text-primary text-sm font-medium transition-colors',
+                  'relative py-1 text-sm font-medium transition-colors',
                   isActive(pathname, href)
-                    ? 'border-primary text-primary border-b-2'
-                    : 'text-muted-foreground'
+                    ? 'text-primary'
+                    : 'text-muted-foreground hover:text-foreground'
                 )}
               >
                 {label}
+                {isActive(pathname, href) && (
+                  <span className="bg-primary absolute inset-x-0 -bottom-[1px] h-[2px] rounded-full" />
+                )}
               </Link>
             ))}
           </nav>
 
           <div className="flex items-center gap-3">
             {isLoggedIn && streak > 0 && (
-              <span className="text-sm font-medium">🔥 {streak}</span>
+              <div className="border-primary/30 bg-primary/10 text-primary flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm font-semibold">
+                <Flame className="size-3.5" />
+                <span>{streak}</span>
+              </div>
             )}
-            <Button variant="outline" size="sm" asChild>
+            <Button
+              variant={isLoggedIn ? 'outline' : 'default'}
+              size="sm"
+              asChild
+            >
               {isLoggedIn ? (
                 <Link href="/profile">My Profile</Link>
               ) : (
@@ -74,8 +89,8 @@ export function Navbar({
         </div>
       </header>
 
-      {/* Mobile: fixed bottom nav */}
-      <nav className="bg-background fixed inset-x-0 bottom-0 z-50 flex h-14 items-center border-t md:hidden">
+      {/* Mobile: fixed bottom nav with glassmorphism */}
+      <nav className="border-border/60 bg-background/90 fixed inset-x-0 bottom-0 z-50 flex h-16 items-center border-t backdrop-blur-md md:hidden">
         {MOBILE_NAV_ITEMS.map(({ href, label, Icon }) => {
           const resolvedHref = label === 'Profile' ? profileHref : href
           const active = isActive(pathname, resolvedHref)
@@ -84,20 +99,28 @@ export function Navbar({
               key={href}
               href={resolvedHref}
               aria-label={label}
-              className="flex min-h-[44px] flex-1 flex-col items-center justify-center gap-0.5 py-2"
+              className="relative flex min-h-[44px] flex-1 flex-col items-center justify-center gap-1 py-2"
             >
+              {active && (
+                <span
+                  className="bg-primary absolute top-0 left-1/2 h-[2px] w-8 -translate-x-1/2 rounded-b-full"
+                  aria-hidden="true"
+                />
+              )}
               <Icon
                 className={cn(
                   'size-5 transition-colors',
                   active ? 'text-primary' : 'text-muted-foreground'
                 )}
               />
-              {active && (
-                <span
-                  className="bg-primary size-1 rounded-full"
-                  aria-hidden="true"
-                />
-              )}
+              <span
+                className={cn(
+                  'text-[10px] font-medium transition-colors',
+                  active ? 'text-primary' : 'text-muted-foreground'
+                )}
+              >
+                {label}
+              </span>
             </Link>
           )
         })}

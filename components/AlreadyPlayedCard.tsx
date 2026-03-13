@@ -1,5 +1,8 @@
 'use client'
 
+import { CheckCircle2, Clock } from 'lucide-react'
+import { ScoreBar } from '@/components/ScoreBar'
+
 type Props = {
   guessElo: number
   actualElo: number
@@ -24,29 +27,50 @@ export function AlreadyPlayedCard({ guessElo, actualElo, score }: Props) {
   const timeLeft = timeUntilNextGame()
 
   return (
-    <div className="border-border bg-card flex w-full flex-col items-center gap-3 rounded-lg border p-4">
-      <p className="text-muted-foreground text-sm font-medium">
-        ✓ Already played today
-      </p>
-      <div className="text-muted-foreground text-sm">
-        Your guess:{' '}
-        <strong className="text-foreground">{guessElo.toLocaleString()}</strong>
+    <div className="border-border bg-card w-full overflow-hidden rounded-xl border">
+      {/* Header */}
+      <div className="border-border bg-muted/40 flex items-center gap-2 border-b px-4 py-3">
+        <CheckCircle2 className="text-primary size-4" />
+        <span className="text-sm font-medium">Already played today</span>
       </div>
-      <div className="text-muted-foreground text-sm">
-        Actual Elo:{' '}
-        <strong className="text-foreground">
-          {actualElo.toLocaleString()}
-        </strong>
+
+      {/* Stats */}
+      <div className="flex flex-col items-center gap-4 px-4 py-5">
+        {/* Score */}
+        <div className="text-center">
+          <p className="text-primary text-3xl font-bold tabular-nums">
+            {score.toLocaleString()}
+          </p>
+          <p className="text-muted-foreground mt-0.5 text-xs">out of 5,000</p>
+        </div>
+
+        <ScoreBar score={score} />
+
+        {/* Guess vs actual */}
+        <div className="border-border bg-muted/40 w-full rounded-lg border px-4 py-3">
+          <div className="flex justify-between text-sm">
+            <span className="text-muted-foreground">Your guess</span>
+            <span className="font-semibold tabular-nums">
+              {guessElo.toLocaleString()}
+            </span>
+          </div>
+          <div className="mt-1.5 flex justify-between text-sm">
+            <span className="text-muted-foreground">Actual Elo</span>
+            <span className="font-semibold tabular-nums">
+              {actualElo.toLocaleString()}
+            </span>
+          </div>
+          <div className="border-border text-muted-foreground mt-2 border-t pt-2 text-center text-xs">
+            Off by <span className="text-foreground font-medium">{diff}</span>
+          </div>
+        </div>
+
+        {/* Countdown */}
+        <div className="text-muted-foreground flex items-center gap-1.5 text-xs">
+          <Clock className="size-3.5" />
+          <span>Next game in {timeLeft}</span>
+        </div>
       </div>
-      <div className="text-muted-foreground text-xs">
-        Off by {diff} · {score.toLocaleString()} / 5,000
-      </div>
-      <div className="flex gap-1 text-xl">
-        {[1000, 2000, 3000, 4000, 5000].map((tier) => (
-          <span key={tier}>{score >= tier ? '🟩' : '⬛'}</span>
-        ))}
-      </div>
-      <p className="text-muted-foreground text-xs">Next game in {timeLeft}</p>
     </div>
   )
 }

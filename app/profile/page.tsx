@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation'
+import { Flame, Trophy } from 'lucide-react'
 import { createClient } from '@/utils/supabase/server'
 import { getProfileByUserId, computeActiveStreak } from '@/lib/dal/profiles'
 import { signOut } from '@/lib/actions/auth'
@@ -26,13 +27,17 @@ export default async function ProfilePage() {
         </div>
 
         <div className="grid grid-cols-2 gap-3">
-          <div className="bg-muted rounded-lg p-3 text-center">
-            <p className="text-2xl font-bold">🔥 {activeStreak}</p>
-            <p className="text-muted-foreground mt-1 text-xs">Current streak</p>
+          <div className="bg-muted/60 flex flex-col items-center gap-2 rounded-lg p-4">
+            <Flame className="text-primary size-6" />
+            <p className="text-2xl font-bold tabular-nums">{activeStreak}</p>
+            <p className="text-muted-foreground text-xs">Current streak</p>
           </div>
-          <div className="bg-muted rounded-lg p-3 text-center">
-            <p className="text-2xl font-bold">🏆 {profile?.best_streak ?? 0}</p>
-            <p className="text-muted-foreground mt-1 text-xs">Best streak</p>
+          <div className="bg-muted/60 flex flex-col items-center gap-2 rounded-lg p-4">
+            <Trophy className="text-primary size-6" />
+            <p className="text-2xl font-bold tabular-nums">
+              {profile?.best_streak ?? 0}
+            </p>
+            <p className="text-muted-foreground text-xs">Best streak</p>
           </div>
         </div>
 
