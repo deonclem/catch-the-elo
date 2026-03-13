@@ -35,9 +35,11 @@ export default async function RootLayout({
 
   return (
     <html lang="en" className={`${inter.variable} ${geistMono.variable}`}>
-      <body className="antialiased">
+      <body className="flex min-h-screen flex-col antialiased">
         <Navbar isLoggedIn={user !== null} streak={streak} />
-        <div className="pb-14 md:pt-16 md:pb-0">{children}</div>
+        <div className="flex flex-1 flex-col pb-14 md:pt-16 md:pb-0">
+          {children}
+        </div>
       </body>
     </html>
   )

@@ -57,6 +57,25 @@ export async function getDailyGameResultForUser(
   }
 }
 
+export async function getResultsForDailyGames(
+  userId: string,
+  gameIds: string[]
+): Promise<Map<string, number>> {
+  if (gameIds.length === 0) return new Map()
+  const supabase = await createClient()
+  const { data } = await supabase
+    .from('game_results')
+    .select('daily_game_id, score')
+    .eq('user_id', userId)
+    .in('daily_game_id', gameIds)
+    .is('deleted_at', null)
+  const map = new Map<string, number>()
+  for (const row of data ?? []) {
+    if (row.daily_game_id) map.set(row.daily_game_id, row.score)
+  }
+  return map
+}
+
 export async function getDailyLeaderboard(
   dailyGameId: string
 ): Promise<LeaderboardEntry[]> {

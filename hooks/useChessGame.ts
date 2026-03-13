@@ -14,7 +14,7 @@ export function useChessGame(
   onResult?: (guessElo: number, actualElo: number, score: number) => void
 ) {
   const [currentMoveIndex, setCurrentMoveIndex] = useState(0)
-  const [guess, setGuess] = useState('')
+  const [guess, setGuess] = useState('1500')
   const [result, setResult] = useState<Result | null>(null)
 
   const canGoBack = currentMoveIndex > 0

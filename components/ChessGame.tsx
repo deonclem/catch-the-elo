@@ -1,14 +1,18 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import type { ParsedGame } from '@/lib/chess/parser'
+import type { DayEntry } from './DailyCalendar'
 import { useChessGame } from '@/hooks/useChessGame'
 import { submitDailyResult } from '@/lib/actions/games'
 import { MoveNavigator } from './MoveNavigator'
 import { EloGuessForm } from './EloGuessForm'
 import { AlreadyPlayedCard } from './AlreadyPlayedCard'
 import { PlayerClock } from './PlayerClock'
+import { GameInfoCard } from './GameInfoCard'
+import { DailyCalendar } from './DailyCalendar'
 import { ResultDialog } from './dialogs/ResultDialog'
 
 const ChessBoardClient = dynamic(
@@ -17,7 +21,7 @@ const ChessBoardClient = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="bg-muted aspect-square w-[85vw] max-w-[504px] animate-pulse rounded" />
+      <div className="bg-muted aspect-square w-[85vw] max-w-[504px] animate-pulse rounded-xl" />
     ),
   }
 )
@@ -32,9 +36,20 @@ type Props = {
   game: ParsedGame
   dailyGameId?: string
   existingResult?: ExistingResult | null
+  recentDays: DayEntry[]
+  isLoggedIn: boolean
+  streak: number
 }
 
-export function ChessGame({ game, dailyGameId, existingResult }: Props) {
+export function ChessGame({
+  game,
+  dailyGameId,
+  existingResult,
+  recentDays,
+  isLoggedIn,
+  streak,
+}: Props) {
+  const router = useRouter()
   const [submittedResult, setSubmittedResult] = useState<ExistingResult | null>(
     null
   )
@@ -43,9 +58,9 @@ export function ChessGame({ game, dailyGameId, existingResult }: Props) {
     ? (guessElo: number, actualElo: number, score: number) => {
         setSubmittedResult({ guessElo, actualElo, score })
         document.cookie = `dte_daily_result=${encodeURIComponent(JSON.stringify({ dailyGameId, guessElo, actualElo, score }))}; max-age=${60 * 60 * 48}; path=/; SameSite=Strict`
-        submitDailyResult(dailyGameId, guessElo, actualElo, score).catch(
-          () => {}
-        )
+        submitDailyResult(dailyGameId, guessElo, actualElo, score)
+          .then(() => router.refresh())
+          .catch(() => {})
       }
     : undefined
 
@@ -81,32 +96,63 @@ export function ChessGame({ game, dailyGameId, existingResult }: Props) {
     return () => document.removeEventListener('keydown', onKeyDown)
   }, [goBack, goForward])
 
+  const shownResult = existingResult ?? submittedResult
+
   return (
-    <div className="flex w-[85vw] max-w-[504px] flex-col items-center gap-4 outline-none">
-      {blackClock && <PlayerClock color="black" clock={blackClock} />}
-      <ChessBoardClient fen={currentFen} />
-      {whiteClock && <PlayerClock color="white" clock={whiteClock} />}
-      <MoveNavigator
-        moveLabel={moveLabel}
-        canGoBack={canGoBack}
-        canGoForward={canGoForward}
-        onBack={goBack}
-        onForward={goForward}
-      />
-      {(existingResult ?? submittedResult) ? (
-        <AlreadyPlayedCard {...(existingResult ?? submittedResult)!} />
-      ) : (
-        result === null && (
-          <EloGuessForm
-            guess={guess}
-            onChange={setGuess}
-            onSubmit={handleSubmit}
-          />
-        )
-      )}
-      <p className="text-muted-foreground text-xs">
-        Use ← → arrow keys to navigate
-      </p>
+    <div className="flex flex-col items-center gap-6 lg:flex-row lg:items-start lg:justify-center lg:gap-14">
+      {/* Left column — calendar (desktop only) */}
+      <div className="hidden w-[180px] shrink-0 lg:block">
+        <DailyCalendar
+          days={recentDays}
+          streak={streak}
+          isLoggedIn={isLoggedIn}
+        />
+      </div>
+
+      {/* Middle column — board */}
+      <div className="flex w-[85vw] max-w-[504px] shrink-0 flex-col items-center gap-4">
+        <div className="text-center">
+          <h1 className="text-3xl font-bold tracking-tight md:text-4xl">
+            <span className="from-primary to-primary-end bg-gradient-to-r bg-clip-text text-transparent">
+              Daily
+            </span>{' '}
+            Challenge
+          </h1>
+          <p className="text-muted-foreground mt-1 text-sm">
+            Guess the average Elo of today&apos;s game
+          </p>
+        </div>
+        <GameInfoCard timeControl={game.timeControl} />
+        {blackClock && <PlayerClock color="black" clock={blackClock} />}
+        <ChessBoardClient fen={currentFen} />
+        {whiteClock && <PlayerClock color="white" clock={whiteClock} />}
+        <MoveNavigator
+          moveLabel={moveLabel}
+          canGoBack={canGoBack}
+          canGoForward={canGoForward}
+          onBack={goBack}
+          onForward={goForward}
+        />
+        <p className="text-muted-foreground text-xs">
+          Use ← → arrow keys to navigate
+        </p>
+      </div>
+
+      {/* Right column — guess form or result */}
+      <div className="w-full max-w-[280px] shrink-0 lg:w-[220px]">
+        {shownResult ? (
+          <AlreadyPlayedCard {...shownResult} />
+        ) : (
+          result === null && (
+            <EloGuessForm
+              guess={guess}
+              onChange={setGuess}
+              onSubmit={handleSubmit}
+            />
+          )
+        )}
+      </div>
+
       {result !== null && (
         <ResultDialog
           open={true}

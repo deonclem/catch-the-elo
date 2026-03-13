@@ -13,10 +13,10 @@ export function PlayerClock({ color, clock }: Props) {
       </span>
       <span
         className={cn(
-          'rounded px-2 py-0.5 font-mono text-sm font-semibold tabular-nums',
+          'rounded-md border px-2 py-0.5 font-mono text-sm font-semibold tabular-nums',
           color === 'white'
-            ? 'bg-foreground text-background'
-            : 'bg-muted text-foreground'
+            ? 'border-border bg-card text-foreground'
+            : 'border-primary/20 bg-primary/10 text-primary'
         )}
       >
         {clock}

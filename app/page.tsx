@@ -1,10 +1,15 @@
+import { ChessGame } from '@/components/ChessGame'
+import type { DayEntry } from '@/components/DailyCalendar'
+import { parseDailyGame } from '@/lib/chess/parser'
+import {
+  getDailyGameResultForUser,
+  getResultsForDailyGames,
+} from '@/lib/dal/game_results'
+import { getDailyGame, getRecentDailyGames } from '@/lib/dal/games'
+import { computeActiveStreak, getProfileByUserId } from '@/lib/dal/profiles'
+import { createClient } from '@/utils/supabase/server'
 import { cookies } from 'next/headers'
 import { z } from 'zod'
-import { getDailyGame } from '@/lib/dal/games'
-import { getDailyGameResultForUser } from '@/lib/dal/game_results'
-import { parseDailyGame } from '@/lib/chess/parser'
-import { ChessGame } from '@/components/ChessGame'
-import { createClient } from '@/utils/supabase/server'
 
 const dailyResultCookieSchema = z.object({
   dailyGameId: z.uuid(),
@@ -13,8 +18,18 @@ const dailyResultCookieSchema = z.object({
   score: z.number().int().min(0).max(5000),
 })
 
+const today = new Date().toISOString().split('T')[0]
+
 export default async function Home() {
-  const dailyGame = await getDailyGame()
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  const [dailyGame, recentGames] = await Promise.all([
+    getDailyGame(),
+    getRecentDailyGames(7),
+  ])
 
   if (!dailyGame) {
     return (
@@ -24,16 +39,26 @@ export default async function Home() {
     )
   }
 
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
   const parsedGame = parseDailyGame(dailyGame)
 
+  // Build completion map for logged-in users
+  let scoreMap = new Map<string, number>()
   let existingResult = null
+  let streak = 0
+
   if (user) {
-    existingResult = await getDailyGameResultForUser(user.id, dailyGame.id)
+    const [profile, map] = await Promise.all([
+      getProfileByUserId(user.id),
+      getResultsForDailyGames(
+        user.id,
+        recentGames.map((g) => g.id)
+      ),
+    ])
+    scoreMap = map
+    existingResult = scoreMap.has(dailyGame.id)
+      ? await getDailyGameResultForUser(user.id, dailyGame.id)
+      : null
+    streak = computeActiveStreak(profile)
   } else {
     const cookieStore = await cookies()
     const raw = cookieStore.get('dte_daily_result')?.value
@@ -52,15 +77,24 @@ export default async function Home() {
     }
   }
 
+  // Build DayEntry list (most recent first)
+  const recentDays: DayEntry[] = recentGames.map((g) => ({
+    date: g.scheduled_for,
+    gameId: g.id,
+    isToday: g.scheduled_for === today,
+    played: scoreMap.has(g.id),
+    score: scoreMap.get(g.id) ?? null,
+  }))
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center gap-6 p-4">
-      <h1 className="text-3xl font-bold tracking-tight md:text-4xl">
-        Daily Game
-      </h1>
+    <main className="flex flex-1 flex-col items-center justify-center p-12">
       <ChessGame
         game={parsedGame}
         dailyGameId={dailyGame.id}
         existingResult={existingResult}
+        recentDays={recentDays}
+        isLoggedIn={user !== null}
+        streak={streak}
       />
     </main>
   )
