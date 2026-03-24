@@ -14,7 +14,108 @@ export type Database = {
   }
   public: {
     Tables: {
-      daily_games: {
+      daily_schedule: {
+        Row: {
+          created_at: string
+          deleted_at: string | null
+          game_id: string
+          id: string
+          scheduled_for: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          deleted_at?: string | null
+          game_id: string
+          id?: string
+          scheduled_for: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          deleted_at?: string | null
+          game_id?: string
+          id?: string
+          scheduled_for?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'daily_schedule_game_id_fkey'
+            columns: ['game_id']
+            isOneToOne: false
+            referencedRelation: 'games'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      game_results: {
+        Row: {
+          actual_elo: number
+          created_at: string
+          deleted_at: string | null
+          game_id: string
+          guess_elo: number
+          id: string
+          mode: string
+          ranked_session_id: string | null
+          rating_after: number | null
+          rating_change: number | null
+          round_number: number | null
+          score: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          actual_elo: number
+          created_at?: string
+          deleted_at?: string | null
+          game_id: string
+          guess_elo: number
+          id?: string
+          mode: string
+          ranked_session_id?: string | null
+          rating_after?: number | null
+          rating_change?: number | null
+          round_number?: number | null
+          score: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          actual_elo?: number
+          created_at?: string
+          deleted_at?: string | null
+          game_id?: string
+          guess_elo?: number
+          id?: string
+          mode?: string
+          ranked_session_id?: string | null
+          rating_after?: number | null
+          rating_change?: number | null
+          round_number?: number | null
+          score?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'game_results_game_id_fkey'
+            columns: ['game_id']
+            isOneToOne: false
+            referencedRelation: 'games'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'game_results_ranked_session_id_fkey'
+            columns: ['ranked_session_id']
+            isOneToOne: false
+            referencedRelation: 'ranked_sessions'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      games: {
         Row: {
           black_elo: number
           created_at: string
@@ -23,7 +124,7 @@ export type Database = {
           lichess_id: string | null
           metadata: Json
           pgn: string
-          scheduled_for: string
+          seq_id: number
           target_elo: number
           updated_at: string
           white_elo: number
@@ -36,7 +137,7 @@ export type Database = {
           lichess_id?: string | null
           metadata?: Json
           pgn: string
-          scheduled_for: string
+          seq_id?: number
           target_elo: number
           updated_at?: string
           white_elo: number
@@ -49,68 +150,12 @@ export type Database = {
           lichess_id?: string | null
           metadata?: Json
           pgn?: string
-          scheduled_for?: string
+          seq_id?: number
           target_elo?: number
           updated_at?: string
           white_elo?: number
         }
         Relationships: []
-      }
-      game_results: {
-        Row: {
-          actual_elo: number
-          created_at: string
-          daily_game_id: string | null
-          deleted_at: string | null
-          guess_elo: number
-          id: string
-          mode: string
-          ranked_game_id: string | null
-          rating_after: number | null
-          rating_change: number | null
-          score: number
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          actual_elo: number
-          created_at?: string
-          daily_game_id?: string | null
-          deleted_at?: string | null
-          guess_elo: number
-          id?: string
-          mode: string
-          ranked_game_id?: string | null
-          rating_after?: number | null
-          rating_change?: number | null
-          score: number
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          actual_elo?: number
-          created_at?: string
-          daily_game_id?: string | null
-          deleted_at?: string | null
-          guess_elo?: number
-          id?: string
-          mode?: string
-          ranked_game_id?: string | null
-          rating_after?: number | null
-          rating_change?: number | null
-          score?: number
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: 'game_results_daily_game_id_fkey'
-            columns: ['daily_game_id']
-            isOneToOne: false
-            referencedRelation: 'daily_games'
-            referencedColumns: ['id']
-          },
-        ]
       }
       profiles: {
         Row: {
@@ -154,12 +199,75 @@ export type Database = {
         }
         Relationships: []
       }
+      ranked_sessions: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          deleted_at: string | null
+          id: string
+          rating_after: number | null
+          rating_before: number
+          started_at: string
+          status: string
+          total_score: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          rating_after?: number | null
+          rating_before: number
+          started_at?: string
+          status?: string
+          total_score?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          rating_after?: number | null
+          rating_before?: number
+          started_at?: string
+          status?: string
+          total_score?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_random_games: {
+        Args: { n: number }
+        Returns: {
+          black_elo: number
+          created_at: string
+          deleted_at: string | null
+          id: string
+          lichess_id: string | null
+          metadata: Json
+          pgn: string
+          seq_id: number
+          target_elo: number
+          updated_at: string
+          white_elo: number
+        }[]
+        SetofOptions: {
+          from: '*'
+          to: 'games'
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
     }
     Enums: {
       [_ in never]: never

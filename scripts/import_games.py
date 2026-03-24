@@ -3,17 +3,20 @@
 import_games.py — NDJSON → Supabase
 
 Reads the curated NDJSON file produced by extract_games.py (games are
-already shuffled at extraction time) and assigns sequential scheduled_for
-dates starting from today, then bulk-inserts into the target Supabase table.
+already shuffled at extraction time) and inserts into the games pool.
+
+For daily mode: inserts game into `games` + scheduling row into `daily_schedule`.
+For ranked mode: inserts game into `games` only (no schedule row needed —
+  ranked games are pulled randomly from the pool at session start).
 
 Usage:
-    # Populate daily_games (one game per calendar day)
+    # Populate daily schedule (one game per calendar day)
     python3 scripts/import_games.py \\
         --input curated_games.ndjson \\
         --mode daily \\
         --days 90
 
-    # Populate ranked_games (for ranked mode — table must exist first)
+    # Populate games pool for ranked mode (no schedule rows created)
     python3 scripts/import_games.py \\
         --input curated_games.ndjson \\
         --mode ranked
@@ -22,7 +25,7 @@ Credentials are loaded from scripts/.env (see scripts/.env.example).
 The service role key is required to bypass Row Level Security.
 
 This script performs NO PGN parsing — the heavy lifting was done by
-extract_games.py. It is safe to re-run: duplicate scheduled_for dates
+extract_games.py. It is safe to re-run: duplicate lichess_id values
 are rejected by the UNIQUE constraint and logged, not silently swallowed.
 """
 
@@ -47,8 +50,8 @@ BATCH_SIZE = 100
 # Table names
 # ---------------------------------------------------------------------------
 
-TABLE_DAILY = "daily_games"
-TABLE_RANKED = "ranked_games"
+TABLE_GAMES = "games"
+TABLE_SCHEDULE = "daily_schedule"
 
 
 # ---------------------------------------------------------------------------
@@ -57,7 +60,6 @@ TABLE_RANKED = "ranked_games"
 
 def create_supabase_client() -> Client:
     """Load credentials from scripts/.env and return an authenticated client."""
-    # Look for .env relative to this script's directory
     env_path = Path(__file__).parent / ".env"
     load_dotenv(dotenv_path=env_path)
 
@@ -77,9 +79,9 @@ def create_supabase_client() -> Client:
 # Duplicate detection
 # ---------------------------------------------------------------------------
 
-def fetch_existing_lichess_ids(client: Client, table: str) -> set[str]:
-    """Return the set of lichess_id values already present in the given table."""
-    result = client.table(table).select("lichess_id").execute()
+def fetch_existing_lichess_ids(client: Client) -> set[str]:
+    """Return the set of lichess_id values already present in the games pool."""
+    result = client.table(TABLE_GAMES).select("lichess_id").execute()
     return {row["lichess_id"] for row in result.data if row.get("lichess_id")}
 
 
@@ -108,12 +110,12 @@ def filter_duplicates(games: list[dict], existing_ids: set[str]) -> tuple[list[d
 
 def detect_start_date(client: Client) -> date:
     """
-    Return the next date to schedule in daily_games.
+    Return the next date to schedule in daily_schedule.
     Queries MAX(scheduled_for) and adds one day; falls back to today
-    if the table is empty (so the first import always has a game for the current day).
+    if the table is empty.
     """
     result = (
-        client.table(TABLE_DAILY)
+        client.table(TABLE_SCHEDULE)
         .select("scheduled_for")
         .order("scheduled_for", desc=True)
         .limit(1)
@@ -130,22 +132,6 @@ def detect_start_date(client: Client) -> date:
     today = date.today()
     print(f"  Table is empty — starting from today: {today}", file=sys.stderr)
     return today
-
-
-# ---------------------------------------------------------------------------
-# Ranked mode guard
-# ---------------------------------------------------------------------------
-
-def verify_ranked_table(client: Client) -> None:
-    """Exit with a clear message if ranked_games table does not exist yet."""
-    try:
-        client.table(TABLE_RANKED).select("id").limit(1).execute()
-    except Exception as exc:
-        sys.exit(
-            f"Error: '{TABLE_RANKED}' table does not exist or is not accessible.\n"
-            f"Run the ranked_games migration first.\n"
-            f"Details: {exc}"
-        )
 
 
 # ---------------------------------------------------------------------------
@@ -183,55 +169,85 @@ def load_games(input_path: str) -> list[dict]:
 # Insertion
 # ---------------------------------------------------------------------------
 
+def insert_games_batch(client: Client, games: list[dict]) -> list[dict]:
+    """
+    Upsert a batch into the games pool.
+    Returns the inserted rows (with their generated UUIDs) for schedule linking.
+    """
+    batch = [
+        {
+            "pgn":        g["pgn"],
+            "target_elo": g["target_elo"],
+            "white_elo":  g["white_elo"],
+            "black_elo":  g["black_elo"],
+            "lichess_id": g["lichess_id"],
+            "metadata":   g["metadata"],
+        }
+        for g in games
+    ]
+    result = (
+        client.table(TABLE_GAMES)
+        .upsert(batch, ignore_duplicates=True)
+        .execute()
+    )
+    return result.data or []
+
+
 def insert_daily(client: Client, games: list[dict], start_date: date) -> None:
     """
-    Insert games into daily_games with sequential scheduled_for dates
-    starting from start_date. Uses batched inserts.
+    Insert games into the pool and create daily_schedule rows with sequential dates.
     """
     total = len(games)
     inserted = 0
 
     for i in range(0, total, BATCH_SIZE):
         batch_games = games[i : i + BATCH_SIZE]
-        batch = [
+
+        # 1. Insert game data into the pool
+        inserted_rows = insert_games_batch(client, batch_games)
+
+        # Build a lichess_id → uuid map from the inserted rows
+        id_map = {row["lichess_id"]: row["id"] for row in inserted_rows if row.get("lichess_id")}
+
+        # Fall back to a DB lookup for rows that were skipped by ignore_duplicates
+        missing_ids = [g["lichess_id"] for g in batch_games if g["lichess_id"] not in id_map]
+        if missing_ids:
+            lookup = (
+                client.table(TABLE_GAMES)
+                .select("id, lichess_id")
+                .in_("lichess_id", missing_ids)
+                .execute()
+            )
+            for row in lookup.data or []:
+                if row.get("lichess_id"):
+                    id_map[row["lichess_id"]] = row["id"]
+
+        # 2. Insert schedule rows
+        schedule_batch = [
             {
+                "game_id":      id_map[g["lichess_id"]],
                 "scheduled_for": str(start_date + timedelta(days=i + j)),
-                "pgn":           g["pgn"],
-                "target_elo":    g["target_elo"],
-                "white_elo":     g["white_elo"],
-                "black_elo":     g["black_elo"],
-                "lichess_id":    g["lichess_id"],
-                "metadata":      g["metadata"],
             }
             for j, g in enumerate(batch_games)
+            if g["lichess_id"] in id_map
         ]
 
-        client.table(TABLE_DAILY).upsert(batch, ignore_duplicates=True).execute()
-        inserted += len(batch)
-        print(f"  Inserted rows {i + 1}–{inserted} / {total}", file=sys.stderr, flush=True)
+        if schedule_batch:
+            client.table(TABLE_SCHEDULE).upsert(schedule_batch, ignore_duplicates=True).execute()
+
+        inserted += len(batch_games)
+        print(f"  Processed rows {i + 1}–{inserted} / {total}", file=sys.stderr, flush=True)
 
 
 def insert_ranked(client: Client, games: list[dict]) -> None:
-    """Insert games into ranked_games (no date assignment)."""
+    """Insert games into the pool only (no schedule rows — ranked pulls randomly)."""
     total = len(games)
     inserted = 0
 
     for i in range(0, total, BATCH_SIZE):
         batch_games = games[i : i + BATCH_SIZE]
-        batch = [
-            {
-                "pgn":        g["pgn"],
-                "target_elo": g["target_elo"],
-                "white_elo":  g["white_elo"],
-                "black_elo":  g["black_elo"],
-                "lichess_id": g["lichess_id"],
-                "metadata":   g["metadata"],
-            }
-            for g in batch_games
-        ]
-
-        client.table(TABLE_RANKED).upsert(batch, ignore_duplicates=True).execute()
-        inserted += len(batch)
+        insert_games_batch(client, batch_games)
+        inserted += len(batch_games)
         print(f"  Inserted rows {i + 1}–{inserted} / {total}", file=sys.stderr, flush=True)
 
 
@@ -248,8 +264,10 @@ def print_summary(
     from collections import Counter
 
     total = len(games)
-    table = TABLE_DAILY if mode == "daily" else TABLE_RANKED
-    print(f"\n✓ Inserted {total} rows into {table}")
+    print(f"\n✓ Inserted {total} rows into {TABLE_GAMES}", end="")
+    if mode == "daily":
+        print(f" + {TABLE_SCHEDULE}", end="")
+    print()
 
     if mode == "daily" and start_date is not None:
         end_date = start_date + timedelta(days=total - 1)
@@ -272,7 +290,7 @@ def print_summary(
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Import curated NDJSON games into Supabase (daily_games or ranked_games)."
+        description="Import curated NDJSON games into Supabase games pool."
     )
     parser.add_argument(
         "--input", default="curated_games.ndjson",
@@ -280,7 +298,10 @@ def main() -> None:
     )
     parser.add_argument(
         "--mode", required=True, choices=["daily", "ranked"],
-        help="'daily' inserts into daily_games with scheduled dates. 'ranked' inserts into ranked_games."
+        help=(
+            "'daily' inserts into games pool + creates daily_schedule rows. "
+            "'ranked' inserts into games pool only."
+        )
     )
     parser.add_argument(
         "--days", type=int, default=90,
@@ -291,21 +312,15 @@ def main() -> None:
     print("Connecting to Supabase...", file=sys.stderr)
     client = create_supabase_client()
 
-    # --- Validate target table exists ---
-    if args.mode == "ranked":
-        print(f"Verifying '{TABLE_RANKED}' table exists...", file=sys.stderr)
-        verify_ranked_table(client)
-
     # --- Load games from NDJSON ---
     print(f"\nLoading games from {args.input}...", file=sys.stderr)
     games = load_games(args.input)
     if not games:
         sys.exit("Error: no games found in input file.")
 
-    # --- Check for duplicates already in the target table ---
-    target_table = TABLE_DAILY if args.mode == "daily" else TABLE_RANKED
-    print(f"\nChecking for duplicates in {target_table}...", file=sys.stderr)
-    existing_ids = fetch_existing_lichess_ids(client, target_table)
+    # --- Check for duplicates already in the games pool ---
+    print(f"\nChecking for duplicates in {TABLE_GAMES}...", file=sys.stderr)
+    existing_ids = fetch_existing_lichess_ids(client)
     games, skipped_ids = filter_duplicates(games, existing_ids)
     if not games:
         print(f"\n⚠ All {len(skipped_ids)} games already in DB — nothing to import.", file=sys.stderr)
@@ -313,16 +328,16 @@ def main() -> None:
             print(f"  - {lid}", file=sys.stderr)
         sys.exit(0)
 
-    # --- Insert (ordering was fixed at extraction time by extract_games.py) ---
+    # --- Insert ---
     if args.mode == "daily":
         print("\nDetecting start date...", file=sys.stderr)
         start_date = detect_start_date(client)
-        print(f"\nInserting {len(games)} rows into {TABLE_DAILY}...", file=sys.stderr)
+        print(f"\nInserting {len(games)} games (pool + schedule)...", file=sys.stderr)
         insert_daily(client, games, start_date)
         print_summary(games, "daily", start_date, skipped_ids)
 
     else:  # ranked
-        print(f"\nInserting {len(games)} rows into {TABLE_RANKED}...", file=sys.stderr)
+        print(f"\nInserting {len(games)} games into pool...", file=sys.stderr)
         insert_ranked(client, games)
         print_summary(games, "ranked", skipped_ids=skipped_ids)
 

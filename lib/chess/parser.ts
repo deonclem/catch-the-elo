@@ -35,7 +35,7 @@ const MetadataSchema = z.object({
   time_control: z.string().optional(),
 })
 
-export function parseDailyGame(row: Tables<'daily_games'>): ParsedGame {
+export function parseDailyGame(row: Tables<'games'>): ParsedGame {
   const chess = new Chess()
   chess.loadPgn(row.pgn)
   const moves = chess.history()

@@ -114,16 +114,26 @@ Catch The Elo 🎯
 One row per user. Auto-created on auth signup via trigger (username = null initially).
 Key columns: `username` (nullable until set), `rating` (default 1200, for ranked mode), `highest_score`
 
-### `daily_games`
+### `games`
 
-One row per calendar day. Populated via import pipeline from Lichess game dumps.
-Key columns: `scheduled_for` (DATE UNIQUE), `pgn` (scrubbed of Elo tags), `white_elo`, `black_elo`, `target_elo`, `metadata` (JSONB with player names + time_control), `lichess_id`
+Central pool of all imported games (100k+ at scale). Shared by daily challenge and ranked mode.
+Key columns: `pgn` (scrubbed of Elo tags), `white_elo`, `black_elo`, `target_elo`, `metadata` (JSONB with player names + time_control), `lichess_id`, `seq_id` (bigserial, used for efficient random sampling via `get_random_games` RPC)
+
+### `daily_schedule`
+
+Links a game to a calendar date. One row per day.
+Key columns: `game_id` (FK → games), `scheduled_for` (DATE UNIQUE)
+
+### `ranked_sessions`
+
+One row per ranked mode session (5 rounds) per user.
+Key columns: `user_id`, `status` ('active'|'completed'|'abandoned'), `total_score`, `rating_before`, `rating_after`, `started_at`, `completed_at`
 
 ### `game_results`
 
-One row per user result. Supports both daily and ranked modes.
-Key columns: `user_id`, `daily_game_id` (nullable), `ranked_game_id` (nullable), `mode` ('daily'|'ranked'), `guess_elo`, `actual_elo`, `score`, `rating_change` (ranked only), `rating_after` (ranked only)
-Constraints: XOR check (exactly one game ref), unique (user_id, daily_game_id), RLS: own rows only
+One row per round result. Supports both daily and ranked modes.
+Key columns: `user_id`, `game_id` (FK → games), `mode` ('daily'|'ranked'), `guess_elo`, `actual_elo`, `score`, `ranked_session_id` (nullable FK → ranked_sessions), `round_number` (1–5, ranked only), `rating_change` (ranked only), `rating_after` (ranked only)
+Constraints: unique (user_id, game_id) WHERE daily; unique (ranked_session_id, game_id) WHERE ranked; RLS: own rows only
 
 ---
 
@@ -132,7 +142,7 @@ Constraints: XOR check (exactly one game ref), unique (user_id, daily_game_id), 
 Games are sourced from Lichess public game dumps:
 
 1. `scripts/extract_games.py` — streams a `.zst` dump, filters by format/Elo/move count, scrubs Elo-revealing PGN tags, outputs NDJSON
-2. `scripts/import_games.py` — reads NDJSON, round-robins across 20 Elo brackets (800–2800), batch-inserts into `daily_games` starting from the next available date
+2. `scripts/import_games.py` — reads NDJSON, inserts into `games` pool; for daily mode also creates a `daily_schedule` row per game starting from the next available date; for ranked mode inserts into pool only
 
 Scrubbed PGN tags: `WhiteElo`, `BlackElo`, `WhiteTitle`, `BlackTitle`, `WhiteRatingDiff`, `BlackRatingDiff`
 Kept in PGN: clock annotations `[%clk]` and eval `[%eval]`

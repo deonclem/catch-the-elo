@@ -9,14 +9,14 @@ import {
 import { updateStreak } from '@/lib/dal/profiles'
 
 const dailyResultSchema = z.object({
-  dailyGameId: z.uuid(),
+  gameId: z.string().uuid(),
   guessElo: z.number().int().min(100).max(3500),
   actualElo: z.number().int().min(100).max(3500),
   score: z.number().int().min(0).max(5000),
 })
 
 export async function submitDailyResult(
-  dailyGameId: string,
+  gameId: string,
   guessElo: number,
   actualElo: number,
   score: number
@@ -28,19 +28,19 @@ export async function submitDailyResult(
   if (!user) return
 
   const parsed = dailyResultSchema.safeParse({
-    dailyGameId,
+    gameId,
     guessElo,
     actualElo,
     score,
   })
   if (!parsed.success) return
 
-  const existing = await getDailyGameResultForUser(user.id, dailyGameId)
+  const existing = await getDailyGameResultForUser(user.id, gameId)
   if (existing) return
 
   await insertGameResult({
     userId: user.id,
-    dailyGameId: parsed.data.dailyGameId,
+    gameId: parsed.data.gameId,
     guessElo: parsed.data.guessElo,
     actualElo: parsed.data.actualElo,
     score: parsed.data.score,

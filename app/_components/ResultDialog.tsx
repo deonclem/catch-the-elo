@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Copy, Check, ExternalLink } from 'lucide-react'
+import { Copy, Check, ExternalLink, ArrowUp, ArrowDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -40,6 +40,8 @@ export function ResultDialog({
   lichessUrl,
 }: Props) {
   const diff = Math.abs(guess - actual)
+  const tooHigh = guess > actual
+  const isPerfect = diff <= 20
   const [copied, setCopied] = useState(false)
 
   const handleCopy = () => {
@@ -63,35 +65,60 @@ export function ResultDialog({
           </DialogTitle>
         </DialogHeader>
 
-        <div className="flex flex-col items-center gap-5 py-2">
-          {/* Big score */}
-          <div className="text-center">
-            <p className="text-primary text-4xl font-bold tabular-nums">
-              {score.toLocaleString()}
-            </p>
-            <p className="text-muted-foreground mt-1 text-xs">out of 5,000</p>
+        <div className="flex flex-col items-center gap-4 py-2">
+          {/* Off by — hero */}
+          <div className="flex flex-col items-center gap-1">
+            {isPerfect ? (
+              <p className="text-primary text-5xl font-bold tabular-nums">
+                Spot on
+              </p>
+            ) : (
+              <>
+                <p className="text-primary text-5xl font-bold tabular-nums">
+                  {diff.toLocaleString()}
+                </p>
+                <div className="text-muted-foreground flex items-center gap-1 text-sm">
+                  {tooHigh ? (
+                    <ArrowUp className="size-3.5" />
+                  ) : (
+                    <ArrowDown className="size-3.5" />
+                  )}
+                  <span>{tooHigh ? 'too high' : 'too low'}</span>
+                </div>
+              </>
+            )}
           </div>
 
-          {/* Score bar */}
-          <ScoreBar score={score} />
-
           {/* Guess vs actual */}
-          <div className="border-border bg-muted/40 w-full rounded-lg border px-4 py-3">
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Your guess</span>
-              <span className="font-semibold tabular-nums">
+          <div className="flex w-full items-center justify-between gap-2">
+            <div className="bg-muted/50 flex flex-1 flex-col items-center rounded-lg px-3 py-2.5">
+              <span className="text-muted-foreground mb-0.5 text-xs">
+                Your guess
+              </span>
+              <span className="text-foreground text-lg font-bold tabular-nums">
                 {guess.toLocaleString()}
               </span>
             </div>
-            <div className="mt-1.5 flex justify-between text-sm">
-              <span className="text-muted-foreground">Actual Elo</span>
-              <span className="font-semibold tabular-nums">
+            <span className="text-muted-foreground text-xs">vs</span>
+            <div className="bg-muted/50 flex flex-1 flex-col items-center rounded-lg px-3 py-2.5">
+              <span className="text-muted-foreground mb-0.5 text-xs">
+                Actual Elo
+              </span>
+              <span className="text-foreground text-lg font-bold tabular-nums">
                 {actual.toLocaleString()}
               </span>
             </div>
-            <div className="border-border text-muted-foreground mt-2 border-t pt-2 text-center text-xs">
-              Off by <span className="text-foreground font-medium">{diff}</span>
+          </div>
+
+          {/* Score */}
+          <div className="flex w-full flex-col items-center gap-2">
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-primary text-3xl font-bold tabular-nums">
+                {score.toLocaleString()}
+              </span>
+              <span className="text-muted-foreground text-sm">/ 5,000 pts</span>
             </div>
+            <ScoreBar score={score} />
           </div>
 
           {/* Actions */}

@@ -12,7 +12,7 @@ import { cookies } from 'next/headers'
 import { z } from 'zod'
 
 const dailyResultCookieSchema = z.object({
-  dailyGameId: z.uuid(),
+  gameId: z.string().uuid(),
   guessElo: z.number().int().min(100).max(3500),
   actualElo: z.number().int().min(100).max(3500),
   score: z.number().int().min(0).max(5000),
@@ -67,7 +67,7 @@ export default async function Home() {
         const parsed = dailyResultCookieSchema.safeParse(
           JSON.parse(decodeURIComponent(raw))
         )
-        if (parsed.success && parsed.data.dailyGameId === dailyGame.id) {
+        if (parsed.success && parsed.data.gameId === dailyGame.id) {
           const { guessElo, actualElo, score } = parsed.data
           existingResult = { guessElo, actualElo, score }
         }

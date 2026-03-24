@@ -12,7 +12,7 @@ export type LeaderboardEntry = {
 
 type GameResultData = {
   userId: string
-  dailyGameId: string
+  gameId: string
   guessElo: number
   actualElo: number
   score: number
@@ -28,7 +28,7 @@ export async function insertGameResult(data: GameResultData): Promise<void> {
   const supabase = await createClient()
   await supabase.from('game_results').insert({
     user_id: data.userId,
-    daily_game_id: data.dailyGameId,
+    game_id: data.gameId,
     guess_elo: data.guessElo,
     actual_elo: data.actualElo,
     score: data.score,
@@ -38,14 +38,15 @@ export async function insertGameResult(data: GameResultData): Promise<void> {
 
 export async function getDailyGameResultForUser(
   userId: string,
-  dailyGameId: string
+  gameId: string
 ): Promise<GameResult | null> {
   const supabase = await createClient()
   const { data } = await supabase
     .from('game_results')
     .select('guess_elo, actual_elo, score')
     .eq('user_id', userId)
-    .eq('daily_game_id', dailyGameId)
+    .eq('game_id', gameId)
+    .eq('mode', 'daily')
     .is('deleted_at', null)
     .single()
 
@@ -65,13 +66,14 @@ export async function getResultsForDailyGames(
   const supabase = await createClient()
   const { data } = await supabase
     .from('game_results')
-    .select('daily_game_id, score')
+    .select('game_id, score')
     .eq('user_id', userId)
-    .in('daily_game_id', gameIds)
+    .in('game_id', gameIds)
+    .eq('mode', 'daily')
     .is('deleted_at', null)
   const map = new Map<string, number>()
   for (const row of data ?? []) {
-    if (row.daily_game_id) map.set(row.daily_game_id, row.score)
+    map.set(row.game_id, row.score)
   }
   return map
 }
@@ -85,29 +87,44 @@ export async function getUserDailyHistory(
   userId: string
 ): Promise<DailyHistoryEntry[]> {
   const supabase = await createClient()
-  const { data } = await supabase
+  const { data: results } = await supabase
     .from('game_results')
-    .select('score, daily_games!inner(scheduled_for)')
+    .select('game_id, score')
     .eq('user_id', userId)
     .eq('mode', 'daily')
     .is('deleted_at', null)
     .order('created_at', { ascending: false })
 
-  return (data ?? []).map((row) => ({
-    date: (row.daily_games as { scheduled_for: string }).scheduled_for,
+  if (!results?.length) return []
+
+  const { data: schedules } = await supabase
+    .from('daily_schedule')
+    .select('game_id, scheduled_for')
+    .in(
+      'game_id',
+      results.map((r) => r.game_id)
+    )
+    .is('deleted_at', null)
+
+  const dateMap = new Map(
+    (schedules ?? []).map((s) => [s.game_id, s.scheduled_for])
+  )
+
+  return results.map((row) => ({
+    date: dateMap.get(row.game_id) ?? '',
     score: row.score,
   }))
 }
 
 export async function getDailyLeaderboard(
-  dailyGameId: string
+  gameId: string
 ): Promise<LeaderboardEntry[]> {
   const supabase = await createClient()
 
   const { data: results } = await supabase
     .from('game_results')
     .select('user_id, score, guess_elo, actual_elo')
-    .eq('daily_game_id', dailyGameId)
+    .eq('game_id', gameId)
     .eq('mode', 'daily')
     .is('deleted_at', null)
     .order('score', { ascending: false })
