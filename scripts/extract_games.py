@@ -8,7 +8,7 @@ to a local NDJSON file for inspection and later import.
 
 Usage:
     zstdcat lichess_db_standard_rated_2024-01.pgn.zst \\
-        | python3 scripts/extract_games.py --output curated_games.ndjson --days 90
+        | python3 scripts/extract_games.py --output curated_games.ndjson --games 25000
 
 The NDJSON file can be safely re-processed or debugged without re-scanning
 the archive. One JSON object per line:
@@ -39,7 +39,7 @@ from supabase import create_client, Client
 # Supabase client + dedup
 # ---------------------------------------------------------------------------
 
-TABLE_DAILY = "daily_games"
+TABLE_GAMES = "games"
 
 
 def create_supabase_client() -> Client:
@@ -60,8 +60,8 @@ def create_supabase_client() -> Client:
 
 
 def fetch_existing_lichess_ids(client: Client) -> set[str]:
-    """Return the set of lichess_id values already present in daily_games."""
-    result = client.table(TABLE_DAILY).select("lichess_id").execute()
+    """Return the set of lichess_id values already present in the games pool."""
+    result = client.table(TABLE_GAMES).select("lichess_id").execute()
     return {row["lichess_id"] for row in result.data if row.get("lichess_id")}
 
 
@@ -250,14 +250,14 @@ def main() -> None:
         help="Path to write the NDJSON output file (default: curated_games.ndjson)"
     )
     parser.add_argument(
-        "--days", type=int, default=90,
-        help="Target number of days to schedule. Determines games_per_bracket = ceil(days / num_brackets). Default: 90"
+        "--games", type=int, default=2000,
+        help="Target total number of games to extract. Determines games_per_bracket = ceil(games / num_brackets). Default: 2000"
     )
     args = parser.parse_args()
 
-    games_per_bracket = math.ceil(args.days / len(BRACKETS))
+    games_per_bracket = math.ceil(args.games / len(BRACKETS))
     print(
-        f"Target: {args.days} days → {games_per_bracket} games/bracket × {len(BRACKETS)} brackets = "
+        f"Target: {args.games} games → {games_per_bracket} games/bracket × {len(BRACKETS)} brackets = "
         f"{games_per_bracket * len(BRACKETS)} total games",
         file=sys.stderr,
     )
