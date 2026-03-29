@@ -13,7 +13,7 @@ Players are shown a real chess game with player names and ratings hidden. They n
 | `/`            | Live   | Daily chess challenge                       |
 | `/auth`        | Live   | Sign in / Sign up                           |
 | `/onboarding`  | Live   | Username picker (OAuth users)               |
-| `/ranked`      | Stub   | Ranked 5-round mode (coming soon)           |
+| `/ranked`      | Live   | Ranked 5-round mode (auth-required)         |
 | `/leaderboard` | Stub   | Global and daily leaderboards (coming soon) |
 | `/profile`     | Live   | Username, email, sign out (auth-required)   |
 
@@ -53,10 +53,10 @@ If a logged-in user visits after already submitting today:
 
 ## Scoring
 
-Formula: `score = round(5000 × e^(-((max(0, |guess - actual| - 20) / 300))²))`
+Formula: `score = round(5000 × e^(-((max(0, |guess - actual| - 20) / 400))²))`
 
 - **Grace zone**: within 20 points of actual = perfect 5000
-- **Decay**: exponential beyond grace zone; 300-point sigma
+- **Decay**: exponential beyond grace zone; 400-point sigma
 - Max: 5000 / Min: 0
 
 **Share text format:**
@@ -146,6 +146,42 @@ Games are sourced from Lichess public game dumps:
 
 Scrubbed PGN tags: `WhiteElo`, `BlackElo`, `WhiteTitle`, `BlackTitle`, `WhiteRatingDiff`, `BlackRatingDiff`
 Kept in PGN: clock annotations `[%clk]` and eval `[%eval]`
+
+---
+
+## Ranked Mode (`/ranked`)
+
+Auth-required. Redirects to `/auth` if not logged in.
+
+### Game flow
+
+1. **Lobby**: shows current rating, "Start Session" button
+2. **Session** (5 rounds): each round is a random game from the `games` pool
+   - Same chess board/navigator/guess form as daily
+   - Round progress sidebar shows completed scores
+   - After each guess: `ResultDialog` shows score + rating delta — closing it advances to the next round
+3. **Complete**: `SessionCompleteCard` shows total score, rating change, per-round breakdown, "Play Again"
+
+### Session resumption
+
+On page load, `getActiveRankedSession(userId)` checks for an in-progress session. If found, the page resumes at the correct round using `game_ids` stored on the session.
+
+### Rating formula
+
+```
+expected  = 1 / (1 + 10^((1500 - playerRating) / 400))
+actual    = score / 5000
+change    = round(32 × (actual - expected))
+```
+
+- Virtual opponent fixed at 1500 for all games
+- K-factor = 32 (same as standard chess)
+- Weaker players gain more for the same performance than stronger ones
+- Constants (`GAME_RATING`, `K_FACTOR`, `RANKED_ROUNDS`) live in `lib/chess/scoring.ts`
+
+### Rating security
+
+`submitRankedRound` never trusts client-provided rating. It computes current rating server-side from `session.rating_before` + previous rounds' `rating_after` values.
 
 ---
 

@@ -9,9 +9,10 @@ type Props = {
   guess: string
   onChange: (value: string) => void
   onSubmit: (e: { preventDefault(): void }) => void
+  disabled?: boolean
 }
 
-export function EloGuessForm({ guess, onChange, onSubmit }: Props) {
+export function EloGuessForm({ guess, onChange, onSubmit, disabled }: Props) {
   const numericGuess = Number(guess)
 
   return (
@@ -55,7 +56,11 @@ export function EloGuessForm({ guess, onChange, onSubmit }: Props) {
           placeholder="or type..."
           className="border-input bg-card focus:border-primary focus:ring-primary/30 h-9 min-w-0 flex-1 rounded-md border px-3 text-center text-sm transition-colors outline-none focus:ring-2"
         />
-        <Button type="submit" disabled={!guess} className="h-9 shrink-0 px-4">
+        <Button
+          type="submit"
+          disabled={!guess || disabled}
+          className="h-9 shrink-0 px-4"
+        >
           Submit
         </Button>
       </div>

@@ -24,6 +24,71 @@ type GameResult = {
   score: number
 }
 
+type RankedGameResultData = {
+  userId: string
+  gameId: string
+  rankedSessionId: string
+  roundNumber: number
+  guessElo: number
+  actualElo: number
+  score: number
+  ratingChange: number
+  ratingAfter: number
+}
+
+export type RoundResult = {
+  roundNumber: number
+  gameId: string
+  guessElo: number
+  actualElo: number
+  score: number
+  ratingChange: number
+  ratingAfter: number
+}
+
+export async function insertRankedGameResult(
+  data: RankedGameResultData
+): Promise<void> {
+  const supabase = await createClient()
+  await supabase.from('game_results').insert({
+    user_id: data.userId,
+    game_id: data.gameId,
+    ranked_session_id: data.rankedSessionId,
+    round_number: data.roundNumber,
+    guess_elo: data.guessElo,
+    actual_elo: data.actualElo,
+    score: data.score,
+    rating_change: data.ratingChange,
+    rating_after: data.ratingAfter,
+    mode: 'ranked',
+  })
+}
+
+export async function getRankedSessionResults(
+  sessionId: string
+): Promise<RoundResult[]> {
+  const supabase = await createClient()
+  const { data } = await supabase
+    .from('game_results')
+    .select(
+      'round_number, game_id, guess_elo, actual_elo, score, rating_change, rating_after'
+    )
+    .eq('ranked_session_id', sessionId)
+    .eq('mode', 'ranked')
+    .is('deleted_at', null)
+    .order('round_number', { ascending: true })
+
+  return (data ?? []).map((r) => ({
+    roundNumber: r.round_number!,
+    gameId: r.game_id,
+    guessElo: r.guess_elo,
+    actualElo: r.actual_elo,
+    score: r.score,
+    ratingChange: r.rating_change!,
+    ratingAfter: r.rating_after!,
+  }))
+}
+
 export async function insertGameResult(data: GameResultData): Promise<void> {
   const supabase = await createClient()
   await supabase.from('game_results').insert({

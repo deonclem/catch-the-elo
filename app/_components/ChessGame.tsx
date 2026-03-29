@@ -1,18 +1,18 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
-import dynamic from 'next/dynamic'
-import type { ParsedGame } from '@/lib/chess/parser'
-import type { DayEntry } from './DailyCalendar'
 import { useChessGame } from '@/hooks/useChessGame'
 import { submitDailyResult } from '@/lib/actions/games'
-import { MoveNavigator } from './MoveNavigator'
-import { EloGuessForm } from './EloGuessForm'
+import type { ParsedGame } from '@/lib/chess/parser'
+import dynamic from 'next/dynamic'
+import { useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
 import { AlreadyPlayedCard } from './AlreadyPlayedCard'
-import { PlayerClock } from './PlayerClock'
-import { GameInfoCard } from './GameInfoCard'
+import type { DayEntry } from './DailyCalendar'
 import { DailyCalendar } from './DailyCalendar'
+import { EloGuessForm } from './EloGuessForm'
+import { GameInfoCard } from './GameInfoCard'
+import { MoveNavigator } from './MoveNavigator'
+import { PlayerClock, playerOutcome } from './PlayerClock'
 import { ResultDialog } from './ResultDialog'
 
 const ChessBoardClient = dynamic(
@@ -78,6 +78,7 @@ export function ChessGame({
     moveLabel,
     whiteClock,
     blackClock,
+    isAtLastMove,
   } = useChessGame(game, onResult)
 
   useEffect(() => {
@@ -123,9 +124,21 @@ export function ChessGame({
           </p>
         </div>
         <GameInfoCard timeControl={game.timeControl} />
-        {blackClock && <PlayerClock color="black" clock={blackClock} />}
+        <PlayerClock
+          color="black"
+          clock={blackClock}
+          outcome={
+            isAtLastMove ? playerOutcome('black', game.result) : undefined
+          }
+        />
         <ChessBoardClient fen={currentFen} />
-        {whiteClock && <PlayerClock color="white" clock={whiteClock} />}
+        <PlayerClock
+          color="white"
+          clock={whiteClock}
+          outcome={
+            isAtLastMove ? playerOutcome('white', game.result) : undefined
+          }
+        />
         <MoveNavigator
           moveLabel={moveLabel}
           canGoBack={canGoBack}

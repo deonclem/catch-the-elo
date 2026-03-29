@@ -85,12 +85,17 @@ export default async function ProfilePage() {
 
         {/* ── 2. Ranked ── */}
         <Section title="Ranked">
-          <div className="bg-card border-border flex flex-col items-center gap-2 rounded-xl border p-6 text-center">
-            <Swords className="text-muted-foreground size-8" />
-            <p className="text-sm font-medium">Ranked mode coming soon</p>
-            <p className="text-muted-foreground text-xs">
-              Your Elo rating and match history will appear here.
-            </p>
+          <div className="grid grid-cols-2 gap-3">
+            <StatCard
+              icon={<Swords className="size-5" />}
+              value={profile?.rating ?? 1200}
+              label="Rating"
+            />
+            <StatCard
+              icon={<Trophy className="size-5" />}
+              value={profile?.highest_score?.toLocaleString() ?? '—'}
+              label="Best score"
+            />
           </div>
         </Section>
 

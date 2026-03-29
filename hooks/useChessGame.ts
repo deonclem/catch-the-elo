@@ -73,6 +73,8 @@ export function useChessGame(
   const whiteClock = hasClock ? formatCs(whiteCs) : null
   const blackClock = hasClock ? formatCs(blackCs) : null
 
+  const isAtLastMove = !canGoForward && currentMoveIndex > 0
+
   return {
     guess,
     setGuess,
@@ -87,5 +89,6 @@ export function useChessGame(
     moveLabel,
     whiteClock,
     blackClock,
+    isAtLastMove,
   }
 }

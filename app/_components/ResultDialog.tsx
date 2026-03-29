@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Copy, Check, ExternalLink, ArrowUp, ArrowDown } from 'lucide-react'
+import { Copy, Check, ExternalLink } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -20,6 +20,8 @@ type Props = {
   score: number
   speed: string
   lichessUrl?: string
+  ratingChange?: number
+  nextLabel?: string
 }
 
 function scoreLabel(score: number): string {
@@ -38,10 +40,9 @@ export function ResultDialog({
   score,
   speed,
   lichessUrl,
+  ratingChange,
+  nextLabel,
 }: Props) {
-  const diff = Math.abs(guess - actual)
-  const tooHigh = guess > actual
-  const isPerfect = diff <= 20
   const [copied, setCopied] = useState(false)
 
   const handleCopy = () => {
@@ -66,45 +67,22 @@ export function ResultDialog({
         </DialogHeader>
 
         <div className="flex flex-col items-center gap-4 py-2">
-          {/* Off by — hero */}
-          <div className="flex flex-col items-center gap-1">
-            {isPerfect ? (
-              <p className="text-primary text-5xl font-bold tabular-nums">
-                Spot on
-              </p>
-            ) : (
-              <>
-                <p className="text-primary text-5xl font-bold tabular-nums">
-                  {diff.toLocaleString()}
-                </p>
-                <div className="text-muted-foreground flex items-center gap-1 text-sm">
-                  {tooHigh ? (
-                    <ArrowUp className="size-3.5" />
-                  ) : (
-                    <ArrowDown className="size-3.5" />
-                  )}
-                  <span>{tooHigh ? 'too high' : 'too low'}</span>
-                </div>
-              </>
-            )}
-          </div>
-
-          {/* Guess vs actual */}
+          {/* Guess vs actual — hero */}
           <div className="flex w-full items-center justify-between gap-2">
-            <div className="bg-muted/50 flex flex-1 flex-col items-center rounded-lg px-3 py-2.5">
-              <span className="text-muted-foreground mb-0.5 text-xs">
+            <div className="bg-muted/50 flex flex-1 flex-col items-center rounded-lg px-3 py-4">
+              <span className="text-muted-foreground mb-1 text-xs">
                 Your guess
               </span>
-              <span className="text-foreground text-lg font-bold tabular-nums">
+              <span className="text-foreground text-3xl font-bold tabular-nums">
                 {guess.toLocaleString()}
               </span>
             </div>
             <span className="text-muted-foreground text-xs">vs</span>
-            <div className="bg-muted/50 flex flex-1 flex-col items-center rounded-lg px-3 py-2.5">
-              <span className="text-muted-foreground mb-0.5 text-xs">
+            <div className="bg-muted/50 flex flex-1 flex-col items-center rounded-lg px-3 py-4">
+              <span className="text-muted-foreground mb-1 text-xs">
                 Actual Elo
               </span>
-              <span className="text-foreground text-lg font-bold tabular-nums">
+              <span className="text-foreground text-3xl font-bold tabular-nums">
                 {actual.toLocaleString()}
               </span>
             </div>
@@ -119,23 +97,37 @@ export function ResultDialog({
               <span className="text-muted-foreground text-sm">/ 5,000 pts</span>
             </div>
             <ScoreBar score={score} />
+            {ratingChange !== undefined && (
+              <div
+                className={`text-sm font-semibold ${ratingChange >= 0 ? 'text-green-500' : 'text-red-500'}`}
+              >
+                {ratingChange >= 0 ? '+' : ''}
+                {ratingChange} rating
+              </div>
+            )}
           </div>
 
           {/* Actions */}
           <div className="flex w-full flex-col gap-2">
-            <Button onClick={handleCopy} className="w-full gap-2">
-              {copied ? (
-                <>
-                  <Check className="size-4" />
-                  Copied!
-                </>
-              ) : (
-                <>
-                  <Copy className="size-4" />
-                  Share result
-                </>
-              )}
-            </Button>
+            {ratingChange !== undefined ? (
+              <Button onClick={onClose} className="w-full">
+                {nextLabel ?? 'Next Round'}
+              </Button>
+            ) : (
+              <Button onClick={handleCopy} className="w-full gap-2">
+                {copied ? (
+                  <>
+                    <Check className="size-4" />
+                    Copied!
+                  </>
+                ) : (
+                  <>
+                    <Copy className="size-4" />
+                    Share result
+                  </>
+                )}
+              </Button>
+            )}
             {lichessUrl && (
               <Button variant="ghost" size="sm" asChild className="gap-1.5">
                 <a href={lichessUrl} target="_blank" rel="noopener noreferrer">

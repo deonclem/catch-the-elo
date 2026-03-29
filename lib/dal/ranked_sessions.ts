@@ -2,6 +2,7 @@ import 'server-only'
 
 import { createClient } from '@/utils/supabase/server'
 import { getRandomGames } from '@/lib/dal/games'
+import { RANKED_ROUNDS } from '@/lib/chess/scoring'
 import type { Tables } from '@/lib/database.types'
 
 export type RankedSession = {
@@ -26,8 +27,13 @@ export async function createRankedSession(
 ): Promise<RankedSessionWithGames | null> {
   const supabase = await createClient()
 
-  const games = await getRandomGames(5)
-  if (games.length < 5) return null
+  const games = await getRandomGames(RANKED_ROUNDS)
+  if (games.length < RANKED_ROUNDS) {
+    console.error(
+      `createRankedSession: getRandomGames returned ${games.length}/${RANKED_ROUNDS} games`
+    )
+    return null
+  }
 
   const { data: session, error } = await supabase
     .from('ranked_sessions')
@@ -41,7 +47,10 @@ export async function createRankedSession(
     )
     .single()
 
-  if (error || !session) return null
+  if (error || !session) {
+    console.error('createRankedSession: insert failed', error)
+    return null
+  }
 
   return {
     id: session.id,
@@ -108,6 +117,36 @@ export async function getRankedSessionWithGames(
     .filter((g): g is Tables<'games'> => g !== undefined)
 
   return { ...session, games: orderedGames }
+}
+
+export async function getActiveRankedSession(
+  userId: string
+): Promise<RankedSession | null> {
+  const supabase = await createClient()
+
+  const { data } = await supabase
+    .from('ranked_sessions')
+    .select(
+      'id, user_id, status, game_ids, total_score, rating_before, rating_after, started_at, completed_at'
+    )
+    .eq('user_id', userId)
+    .eq('status', 'active')
+    .is('deleted_at', null)
+    .limit(1)
+    .single()
+
+  if (!data) return null
+  return {
+    id: data.id,
+    userId: data.user_id,
+    status: data.status as RankedSession['status'],
+    gameIds: data.game_ids,
+    totalScore: data.total_score,
+    ratingBefore: data.rating_before,
+    ratingAfter: data.rating_after,
+    startedAt: data.started_at,
+    completedAt: data.completed_at,
+  }
 }
 
 export async function completeRankedSession(

@@ -36,6 +36,8 @@
   --color-primary: var(--primary);
   /* Gradient endpoint — used for logo and accent gradients */
   --color-primary-end: var(--primary-end);
+  /* Outcome colors — used in PlayerClock icons */
+  --color-win: oklch(0.78 0.17 85); /* golden yellow */
   --color-popover-foreground: var(--popover-foreground);
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);

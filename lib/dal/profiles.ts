@@ -109,6 +109,14 @@ export async function getRatingLeaderboard(): Promise<
   }))
 }
 
+export async function updateUserRating(
+  userId: string,
+  newRating: number
+): Promise<void> {
+  const supabase = await createClient()
+  await supabase.from('profiles').update({ rating: newRating }).eq('id', userId)
+}
+
 export async function updateStreak(userId: string): Promise<void> {
   const supabase = await createClient()
   const { data: profile } = await supabase

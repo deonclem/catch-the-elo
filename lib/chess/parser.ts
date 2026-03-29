@@ -8,6 +8,24 @@ export type PlayerInfo = {
   elo: number | null
 }
 
+export type Termination = 'checkmate' | 'resign' | 'timeout' | 'draw'
+
+export type GameResult = {
+  winner: 'white' | 'black' | null // null = draw
+  termination: Termination
+}
+
+function deriveTermination(
+  isCheckmate: boolean,
+  winner: 'white' | 'black' | null,
+  terminationTag: string | undefined
+): Termination {
+  if (isCheckmate) return 'checkmate'
+  if (winner === null) return 'draw'
+  if (terminationTag === 'Time forfeit') return 'timeout'
+  return 'resign'
+}
+
 export type ParsedGame = {
   id: string
   // FEN strings: index 0 = starting position, index N = position after move N-1
@@ -21,6 +39,7 @@ export type ParsedGame = {
   initialSeconds: number | null
   // Remaining time in centiseconds after each move (White: even indices 0,2,4…; Black: odd 1,3,5…)
   clocks: number[]
+  result: GameResult
 }
 
 function formatTimeControl(initial: number, increment: number): string {
@@ -69,6 +88,16 @@ export function parseDailyGame(row: Tables<'games'>): ParsedGame {
     timeControl = formatTimeControl(parseInt(tc[1]!), parseInt(tc[2]!))
   }
 
+  const resultTag = row.pgn.match(/\[Result\s+"([^"]+)"\]/)?.[1] ?? '*'
+  const terminationTag = row.pgn.match(/\[Termination\s+"([^"]+)"\]/)?.[1]
+  const isCheckmate = chess.isCheckmate()
+  const winner: GameResult['winner'] =
+    resultTag === '1-0' ? 'white' : resultTag === '0-1' ? 'black' : null
+  const result: GameResult = {
+    winner,
+    termination: deriveTermination(isCheckmate, winner, terminationTag),
+  }
+
   return {
     id: row.lichess_id ?? row.id,
     positions,
@@ -78,6 +107,7 @@ export function parseDailyGame(row: Tables<'games'>): ParsedGame {
     timeControl,
     initialSeconds,
     clocks,
+    result,
   }
 }
 
@@ -109,5 +139,13 @@ export function parseGame(game: LichessGame): ParsedGame {
       : game.speed,
     initialSeconds: game.clock?.initial ?? null,
     clocks: game.clocks ?? [],
+    result: {
+      winner: game.winner ?? null,
+      termination: deriveTermination(
+        chess.isCheckmate(),
+        game.winner ?? null,
+        game.status === 'outoftime' ? 'Time forfeit' : undefined
+      ),
+    },
   }
 }
