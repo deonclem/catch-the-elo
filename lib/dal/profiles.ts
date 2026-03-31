@@ -115,10 +115,28 @@ export async function getRatingLeaderboard(): Promise<
 
 export async function updateUserRating(
   userId: string,
-  newRating: number
+  newRating: number,
+  totalScore?: number
 ): Promise<void> {
   const supabase = await createClient()
-  await supabase.from('profiles').update({ rating: newRating }).eq('id', userId)
+
+  if (totalScore !== undefined) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('highest_score')
+      .eq('id', userId)
+      .single()
+    const newHighest = Math.max(profile?.highest_score ?? 0, totalScore)
+    await supabase
+      .from('profiles')
+      .update({ rating: newRating, highest_score: newHighest })
+      .eq('id', userId)
+  } else {
+    await supabase
+      .from('profiles')
+      .update({ rating: newRating })
+      .eq('id', userId)
+  }
 }
 
 export async function updateAvatarSlug(

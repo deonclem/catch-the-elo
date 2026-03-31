@@ -115,7 +115,7 @@ export async function submitRankedRound(
     const allResults = [...existingResults, { score, ratingAfter }]
     const totalScore = allResults.reduce((sum, r) => sum + r.score, 0)
     await completeRankedSession(sessionId, totalScore, ratingAfter)
-    await updateUserRating(user.id, ratingAfter)
+    await updateUserRating(user.id, ratingAfter, totalScore)
   }
 
   return { ratingChange, ratingAfter }

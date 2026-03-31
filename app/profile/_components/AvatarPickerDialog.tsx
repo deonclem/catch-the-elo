@@ -68,7 +68,13 @@ export function AvatarPickerDialog({ currentSlug }: Props) {
         </button>
       </DialogTrigger>
 
-      <DialogContent className="max-w-sm">
+      <DialogContent
+        className="max-w-sm"
+        // Prevent Radix from auto-focusing the first avatar button on open,
+        // which would trigger its focus-visible ring as a visual artifact.
+        // Keyboard users can still Tab into the grid normally.
+        onOpenAutoFocus={(e) => e.preventDefault()}
+      >
         <DialogHeader>
           <DialogTitle>Choose an avatar</DialogTitle>
         </DialogHeader>
