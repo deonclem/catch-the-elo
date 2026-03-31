@@ -11,6 +11,7 @@ import {
   type StreakLeaderboardEntry,
   type RatingLeaderboardEntry,
 } from '@/lib/dal/profiles'
+import { UserAvatar } from '@/components/ui/UserAvatar'
 import { cn } from '@/lib/utils'
 
 function RankBadge({ rank }: { rank: number }) {
@@ -87,10 +88,17 @@ function DailyRow({
         <RankBadge rank={entry.rank} />
       </td>
       <td className="py-2.5 pr-2">
-        {entry.username ?? 'Anonymous'}
-        {isCurrentUser && (
-          <span className="text-primary ml-1 text-xs font-normal">(you)</span>
-        )}
+        <div className="flex items-center gap-2">
+          <UserAvatar slug={entry.avatarSlug} size="sm" />
+          <span>
+            {entry.username ?? 'Anonymous'}
+            {isCurrentUser && (
+              <span className="text-primary ml-1 text-xs font-normal">
+                (you)
+              </span>
+            )}
+          </span>
+        </div>
       </td>
       <td className="py-2.5 pr-4 text-right tabular-nums">
         {entry.score.toLocaleString()}
@@ -119,10 +127,17 @@ function StreakRow({
         <RankBadge rank={entry.rank} />
       </td>
       <td className="py-2.5 pr-2">
-        {entry.username ?? 'Anonymous'}
-        {isCurrentUser && (
-          <span className="text-primary ml-1 text-xs font-normal">(you)</span>
-        )}
+        <div className="flex items-center gap-2">
+          <UserAvatar slug={entry.avatarSlug} size="sm" />
+          <span>
+            {entry.username ?? 'Anonymous'}
+            {isCurrentUser && (
+              <span className="text-primary ml-1 text-xs font-normal">
+                (you)
+              </span>
+            )}
+          </span>
+        </div>
       </td>
       <td className="py-2.5 pr-4 text-right tabular-nums">
         <span className="flex items-center justify-end gap-1">
@@ -153,10 +168,17 @@ function RatingRow({
         <RankBadge rank={entry.rank} />
       </td>
       <td className="py-2.5 pr-2">
-        {entry.username ?? 'Anonymous'}
-        {isCurrentUser && (
-          <span className="text-primary ml-1 text-xs font-normal">(you)</span>
-        )}
+        <div className="flex items-center gap-2">
+          <UserAvatar slug={entry.avatarSlug} size="sm" />
+          <span>
+            {entry.username ?? 'Anonymous'}
+            {isCurrentUser && (
+              <span className="text-primary ml-1 text-xs font-normal">
+                (you)
+              </span>
+            )}
+          </span>
+        </div>
       </td>
       <td className="py-2.5 pr-4 text-right tabular-nums">{entry.rating}</td>
     </tr>

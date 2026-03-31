@@ -1,6 +1,6 @@
 'use client'
 
-import { useForm } from 'react-hook-form'
+import { useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useTransition } from 'react'
 import { CheckCircle2, XCircle } from 'lucide-react'
@@ -59,7 +59,7 @@ export function SignUpForm() {
     defaultValues: { email: '', password: '', username: '' },
   })
 
-  const password = form.watch('password')
+  const password = useWatch({ control: form.control, name: 'password' })
 
   function onSubmit(values: SignUpValues) {
     startTransition(async () => {

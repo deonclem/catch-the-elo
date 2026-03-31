@@ -20,12 +20,12 @@ export async function submitDailyResult(
   guessElo: number,
   actualElo: number,
   score: number
-): Promise<void> {
+): Promise<{ alreadySubmitted: boolean }> {
   const supabase = await createClient()
   const {
     data: { user },
   } = await supabase.auth.getUser()
-  if (!user) return
+  if (!user) return { alreadySubmitted: false }
 
   const parsed = dailyResultSchema.safeParse({
     gameId,
@@ -33,10 +33,10 @@ export async function submitDailyResult(
     actualElo,
     score,
   })
-  if (!parsed.success) return
+  if (!parsed.success) return { alreadySubmitted: false }
 
   const existing = await getDailyGameResultForUser(user.id, gameId)
-  if (existing) return
+  if (existing) return { alreadySubmitted: true }
 
   await insertGameResult({
     userId: user.id,
@@ -46,4 +46,5 @@ export async function submitDailyResult(
     score: parsed.data.score,
   })
   await updateStreak(user.id)
+  return { alreadySubmitted: false }
 }

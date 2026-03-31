@@ -53,13 +53,19 @@ export function ChessGame({
   const [submittedResult, setSubmittedResult] = useState<ExistingResult | null>(
     null
   )
+  const [suppressResultDialog, setSuppressResultDialog] = useState(false)
 
   const onResult = dailyGameId
     ? (guessElo: number, actualElo: number, score: number) => {
         setSubmittedResult({ guessElo, actualElo, score })
         document.cookie = `dte_daily_result=${encodeURIComponent(JSON.stringify({ gameId: dailyGameId, guessElo, actualElo, score }))}; max-age=${60 * 60 * 48}; path=/; SameSite=Strict`
         submitDailyResult(dailyGameId, guessElo, actualElo, score)
-          .then(() => router.refresh())
+          .then(({ alreadySubmitted }) => {
+            if (alreadySubmitted) {
+              setSuppressResultDialog(true)
+            }
+            router.refresh()
+          })
           .catch(() => {})
       }
     : undefined
@@ -166,7 +172,7 @@ export function ChessGame({
         )}
       </div>
 
-      {result !== null && (
+      {result !== null && !suppressResultDialog && (
         <ResultDialog
           open={true}
           onClose={() => setResult(null)}

@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Zap, Swords, Trophy, User, Flame } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { UserAvatar } from '@/components/ui/UserAvatar'
 import { cn } from '@/lib/utils'
 
 const NAV_LINKS = [
@@ -26,9 +27,11 @@ function isActive(pathname: string, href: string): boolean {
 export function Navbar({
   isLoggedIn,
   streak = 0,
+  avatarSlug = null,
 }: {
   isLoggedIn: boolean
   streak?: number
+  avatarSlug?: string | null
 }) {
   const pathname = usePathname()
   const profileHref = isLoggedIn ? '/profile' : '/auth'
@@ -74,6 +77,11 @@ export function Navbar({
                 <span>{streak}</span>
               </div>
             )}
+            {isLoggedIn && (
+              <Link href="/profile" aria-label="My Profile">
+                <UserAvatar slug={avatarSlug} size="sm" />
+              </Link>
+            )}
             <Button
               variant={isLoggedIn ? 'outline' : 'default'}
               size="sm"
@@ -94,6 +102,7 @@ export function Navbar({
         {MOBILE_NAV_ITEMS.map(({ href, label, Icon }) => {
           const resolvedHref = label === 'Profile' ? profileHref : href
           const active = isActive(pathname, resolvedHref)
+          const isProfile = label === 'Profile'
           return (
             <Link
               key={href}
@@ -107,12 +116,23 @@ export function Navbar({
                   aria-hidden="true"
                 />
               )}
-              <Icon
-                className={cn(
-                  'size-5 transition-colors',
-                  active ? 'text-primary' : 'text-muted-foreground'
-                )}
-              />
+              {isProfile && isLoggedIn ? (
+                <span
+                  className={cn(
+                    'rounded-full transition-opacity',
+                    active ? 'ring-primary ring-1 ring-offset-1' : ''
+                  )}
+                >
+                  <UserAvatar slug={avatarSlug} size="sm" />
+                </span>
+              ) : (
+                <Icon
+                  className={cn(
+                    'size-5 transition-colors',
+                    active ? 'text-primary' : 'text-muted-foreground'
+                  )}
+                />
+              )}
               <span
                 className={cn(
                   'text-[10px] font-medium transition-colors',

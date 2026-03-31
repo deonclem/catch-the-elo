@@ -1,11 +1,12 @@
 import { ProfileCalendar } from './_components/ProfileCalendar'
 import { DeleteAccountDialog } from './_components/DeleteAccountDialog'
+import { AvatarPickerDialog } from './_components/AvatarPickerDialog'
 import { Button } from '@/components/ui/button'
 import { signOut } from '@/lib/actions/auth'
 import { getUserDailyHistory } from '@/lib/dal/game_results'
 import { computeActiveStreak, getProfileByUserId } from '@/lib/dal/profiles'
 import { createClient } from '@/utils/supabase/server'
-import { CalendarDays, Flame, ImageIcon, Swords, Trophy } from 'lucide-react'
+import { CalendarDays, Flame, Swords, Trophy } from 'lucide-react'
 import { redirect } from 'next/navigation'
 
 function Section({
@@ -65,10 +66,7 @@ export default async function ProfilePage() {
         {/* ── 1. Profile ── */}
         <Section title="Profile">
           <div className="bg-card border-border flex items-center gap-4 rounded-xl border p-4">
-            {/* Avatar placeholder */}
-            <div className="bg-muted border-border flex size-14 shrink-0 items-center justify-center rounded-full border">
-              <ImageIcon className="text-muted-foreground size-6" />
-            </div>
+            <AvatarPickerDialog currentSlug={profile?.avatar_slug ?? null} />
             <div className="min-w-0 flex-1">
               <p className="truncate font-semibold">
                 {profile?.username ?? 'Anonymous'}
@@ -77,9 +75,6 @@ export default async function ProfilePage() {
                 {user.email}
               </p>
             </div>
-            <span className="text-muted-foreground border-border rounded-md border px-2 py-1 text-xs">
-              Soon
-            </span>
           </div>
         </Section>
 

@@ -58,6 +58,7 @@ export type StreakLeaderboardEntry = {
   rank: number
   userId: string
   username: string | null
+  avatarSlug: string | null
   streak: number
 }
 
@@ -65,6 +66,7 @@ export type RatingLeaderboardEntry = {
   rank: number
   userId: string
   username: string | null
+  avatarSlug: string | null
   rating: number
 }
 
@@ -75,7 +77,7 @@ export async function getStreakLeaderboard(): Promise<
   const yesterday = utcDateString(-1)
   const { data } = await supabase
     .from('profiles')
-    .select('id, username, current_streak')
+    .select('id, username, avatar_slug, current_streak')
     .gte('streak_last_played', yesterday)
     .gt('current_streak', 0)
     .is('deleted_at', null)
@@ -86,6 +88,7 @@ export async function getStreakLeaderboard(): Promise<
     rank: i + 1,
     userId: p.id,
     username: p.username,
+    avatarSlug: p.avatar_slug,
     streak: p.current_streak,
   }))
 }
@@ -96,7 +99,7 @@ export async function getRatingLeaderboard(): Promise<
   const supabase = await createClient()
   const { data } = await supabase
     .from('profiles')
-    .select('id, username, rating')
+    .select('id, username, avatar_slug, rating')
     .is('deleted_at', null)
     .order('rating', { ascending: false })
     .limit(10)
@@ -105,6 +108,7 @@ export async function getRatingLeaderboard(): Promise<
     rank: i + 1,
     userId: p.id,
     username: p.username,
+    avatarSlug: p.avatar_slug,
     rating: p.rating,
   }))
 }
@@ -115,6 +119,14 @@ export async function updateUserRating(
 ): Promise<void> {
   const supabase = await createClient()
   await supabase.from('profiles').update({ rating: newRating }).eq('id', userId)
+}
+
+export async function updateAvatarSlug(
+  userId: string,
+  slug: string
+): Promise<void> {
+  const supabase = await createClient()
+  await supabase.from('profiles').update({ avatar_slug: slug }).eq('id', userId)
 }
 
 export async function updateStreak(userId: string): Promise<void> {

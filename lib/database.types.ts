@@ -159,6 +159,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          avatar_slug: string | null
           avatar_url: string | null
           best_streak: number
           created_at: string
@@ -172,6 +173,7 @@ export type Database = {
           username: string | null
         }
         Insert: {
+          avatar_slug?: string | null
           avatar_url?: string | null
           best_streak?: number
           created_at?: string
@@ -185,6 +187,7 @@ export type Database = {
           username?: string | null
         }
         Update: {
+          avatar_slug?: string | null
           avatar_url?: string | null
           best_streak?: number
           created_at?: string

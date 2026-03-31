@@ -5,6 +5,7 @@ export type LeaderboardEntry = {
   rank: number
   userId: string
   username: string | null
+  avatarSlug: string | null
   score: number
   guessElo: number
   actualElo: number
@@ -200,15 +201,16 @@ export async function getDailyLeaderboard(
   const userIds = results.map((r) => r.user_id)
   const { data: profiles } = await supabase
     .from('profiles')
-    .select('id, username')
+    .select('id, username, avatar_slug')
     .in('id', userIds)
 
-  const usernameMap = new Map(profiles?.map((p) => [p.id, p.username]) ?? [])
+  const profileMap = new Map(profiles?.map((p) => [p.id, p]) ?? [])
 
   return results.map((r, i) => ({
     rank: i + 1,
     userId: r.user_id,
-    username: usernameMap.get(r.user_id) ?? null,
+    username: profileMap.get(r.user_id)?.username ?? null,
+    avatarSlug: profileMap.get(r.user_id)?.avatar_slug ?? null,
     score: r.score,
     guessElo: r.guess_elo,
     actualElo: r.actual_elo,
