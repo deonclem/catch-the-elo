@@ -14,7 +14,7 @@ Players are shown a real chess game with player names and ratings hidden. They n
 | `/auth`        | Live   | Sign in / Sign up                           |
 | `/onboarding`  | Live   | Username picker (OAuth users)               |
 | `/ranked`      | Live   | Ranked 5-round mode (auth-required)         |
-| `/leaderboard` | Stub   | Global and daily leaderboards (coming soon) |
+| `/leaderboard` | Live   | Global and daily leaderboards               |
 | `/profile`     | Live   | Username, email, sign out (auth-required)   |
 
 ---

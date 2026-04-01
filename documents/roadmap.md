@@ -6,16 +6,9 @@
 - Result persistence for logged-in users
 - Email/password auth + onboarding
 - Responsive navbar (desktop top / mobile bottom)
-- Profile page with rating, streak, daily history
+- Profile page with rating, streak, daily history, Elo history chart
 - Ranked Mode — 5-round sessions, Elo rating system
-
-## Next
-
-### Leaderboards (`/leaderboard`)
-
-- Daily leaderboard: top scores for today's game
-- Global leaderboard: top `profiles.rating` values
-- Requires: queries on `game_results` + `profiles`
+- Leaderboards — top today / top Elo / top streak
 
 ## Later / Ideas
 
