@@ -149,6 +149,33 @@ export async function getActiveRankedSession(
   }
 }
 
+export type RankedSessionHistoryEntry = {
+  ratingBefore: number
+  ratingAfter: number
+  completedAt: string
+}
+
+export async function getUserRankedSessionHistory(
+  userId: string
+): Promise<RankedSessionHistoryEntry[]> {
+  const supabase = await createClient()
+  const { data } = await supabase
+    .from('ranked_sessions')
+    .select('rating_before, rating_after, completed_at')
+    .eq('user_id', userId)
+    .eq('status', 'completed')
+    .is('deleted_at', null)
+    .order('completed_at', { ascending: true })
+
+  return (data ?? [])
+    .filter((s) => s.rating_after !== null && s.completed_at !== null)
+    .map((s) => ({
+      ratingBefore: s.rating_before,
+      ratingAfter: s.rating_after!,
+      completedAt: s.completed_at!,
+    }))
+}
+
 export async function completeRankedSession(
   sessionId: string,
   totalScore: number,

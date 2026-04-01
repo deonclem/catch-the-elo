@@ -12,7 +12,11 @@ import {
   getRankedSessionResults,
 } from '@/lib/dal/game_results'
 import { getProfileByUserId, updateUserRating } from '@/lib/dal/profiles'
-import { calculateRatingChange, RANKED_ROUNDS } from '@/lib/chess/scoring'
+import {
+  calculateRatingChange,
+  INITIAL_RATING,
+  RANKED_ROUNDS,
+} from '@/lib/chess/scoring'
 
 export async function startRankedSession(): Promise<{ error?: string }> {
   const supabase = await createClient()
@@ -26,7 +30,7 @@ export async function startRankedSession(): Promise<{ error?: string }> {
   if (existing) return {}
 
   const profile = await getProfileByUserId(user.id)
-  const ratingBefore = profile?.rating ?? 1200
+  const ratingBefore = profile?.rating ?? INITIAL_RATING
 
   const session = await createRankedSession(user.id, ratingBefore)
   if (!session) return { error: 'Failed to create session' }

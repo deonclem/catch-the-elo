@@ -1,10 +1,12 @@
 import { ProfileCalendar } from './_components/ProfileCalendar'
 import { DeleteAccountDialog } from './_components/DeleteAccountDialog'
 import { AvatarPickerDialog } from './_components/AvatarPickerDialog'
+import { EloChart } from './_components/EloChart'
 import { Button } from '@/components/ui/button'
 import { signOut } from '@/lib/actions/auth'
 import { getUserDailyHistory } from '@/lib/dal/game_results'
 import { computeActiveStreak, getProfileByUserId } from '@/lib/dal/profiles'
+import { getUserRankedSessionHistory } from '@/lib/dal/ranked_sessions'
 import { createClient } from '@/utils/supabase/server'
 import { CalendarDays, Flame, Swords, Trophy } from 'lucide-react'
 import { redirect } from 'next/navigation'
@@ -52,9 +54,10 @@ export default async function ProfilePage() {
 
   if (!user) redirect('/auth')
 
-  const [profile, history] = await Promise.all([
+  const [profile, history, rankedHistory] = await Promise.all([
     getProfileByUserId(user.id),
     getUserDailyHistory(user.id),
+    getUserRankedSessionHistory(user.id),
   ])
 
   const activeStreak = computeActiveStreak(profile)
@@ -92,6 +95,12 @@ export default async function ProfilePage() {
               label="Best score"
             />
           </div>
+          {profile && (
+            <EloChart
+              history={rankedHistory}
+              profileCreatedAt={profile.created_at}
+            />
+          )}
         </Section>
 
         {/* ── 3. Daily ── */}

@@ -1,4 +1,5 @@
 export const RANKED_ROUNDS = 5
+export const INITIAL_RATING = 1200
 
 export function calculateAverageElo(
   whiteElo: number | null,
