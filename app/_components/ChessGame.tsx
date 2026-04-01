@@ -7,6 +7,7 @@ import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { AlreadyPlayedCard } from './AlreadyPlayedCard'
+import { PastDayCard } from './PastDayCard'
 import type { DayEntry } from './DailyCalendar'
 import { DailyCalendar } from './DailyCalendar'
 import { EloGuessForm } from './EloGuessForm'
@@ -39,6 +40,9 @@ type Props = {
   recentDays: DayEntry[]
   isLoggedIn: boolean
   streak: number
+  isToday: boolean
+  selectedDate: string
+  pastDayElo?: number | null
 }
 
 export function ChessGame({
@@ -48,6 +52,9 @@ export function ChessGame({
   recentDays,
   isLoggedIn,
   streak,
+  isToday,
+  selectedDate,
+  pastDayElo,
 }: Props) {
   const router = useRouter()
   const [submittedResult, setSubmittedResult] = useState<ExistingResult | null>(
@@ -108,11 +115,12 @@ export function ChessGame({
   return (
     <div className="flex flex-col items-center gap-6 lg:flex-row lg:items-start lg:justify-center lg:gap-14">
       {/* Left column — calendar (desktop only) */}
-      <div className="hidden w-[180px] shrink-0 lg:block">
+      <div className="hidden w-[220px] shrink-0 lg:block">
         <DailyCalendar
           days={recentDays}
           streak={streak}
           isLoggedIn={isLoggedIn}
+          selectedDate={selectedDate}
         />
       </div>
 
@@ -126,7 +134,9 @@ export function ChessGame({
             Challenge
           </h1>
           <p className="text-muted-foreground mt-1 text-sm">
-            Guess the average Elo of today&apos;s game
+            {isToday
+              ? "Guess the average Elo of today's game"
+              : `Viewing ${new Date(selectedDate + 'T00:00:00Z').toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric', timeZone: 'UTC' })}`}
           </p>
         </div>
         <GameInfoCard timeControl={game.timeControl} />
@@ -160,8 +170,8 @@ export function ChessGame({
       {/* Right column — guess form or result */}
       <div className="w-full max-w-[280px] shrink-0 lg:w-[220px]">
         {shownResult ? (
-          <AlreadyPlayedCard {...shownResult} />
-        ) : (
+          <AlreadyPlayedCard {...shownResult} isToday={isToday} />
+        ) : isToday ? (
           result === null && (
             <EloGuessForm
               guess={guess}
@@ -169,7 +179,9 @@ export function ChessGame({
               onSubmit={handleSubmit}
             />
           )
-        )}
+        ) : pastDayElo != null ? (
+          <PastDayCard key={selectedDate} actualElo={pastDayElo} />
+        ) : null}
       </div>
 
       {result !== null && !suppressResultDialog && (

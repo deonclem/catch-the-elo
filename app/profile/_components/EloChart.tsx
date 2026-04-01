@@ -46,9 +46,16 @@ export function EloChart({
   history: RankedSessionHistoryEntry[]
   profileCreatedAt: string
 }) {
+  // Keep only the last session per calendar day
+  const lastPerDay = new Map<string, RankedSessionHistoryEntry>()
+  for (const s of history) {
+    const day = s.completedAt.slice(0, 10)
+    lastPerDay.set(day, s)
+  }
+
   const data: ChartPoint[] = [
     { ts: new Date(profileCreatedAt).getTime(), rating: INITIAL_RATING },
-    ...history.map((s) => ({
+    ...Array.from(lastPerDay.values()).map((s) => ({
       ts: new Date(s.completedAt).getTime(),
       rating: s.ratingAfter,
     })),

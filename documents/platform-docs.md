@@ -8,14 +8,14 @@ Players are shown a real chess game with player names and ratings hidden. They n
 
 ## Routes
 
-| Route          | Status | Description                                 |
-| -------------- | ------ | ------------------------------------------- |
-| `/`            | Live   | Daily chess challenge                       |
-| `/auth`        | Live   | Sign in / Sign up                           |
-| `/onboarding`  | Live   | Username picker (OAuth users)               |
-| `/ranked`      | Live   | Ranked 5-round mode (auth-required)         |
-| `/leaderboard` | Live   | Global and daily leaderboards               |
-| `/profile`     | Live   | Username, email, sign out (auth-required)   |
+| Route          | Status | Description                               |
+| -------------- | ------ | ----------------------------------------- |
+| `/`            | Live   | Daily chess challenge                     |
+| `/auth`        | Live   | Sign in / Sign up                         |
+| `/onboarding`  | Live   | Username picker (OAuth users)             |
+| `/ranked`      | Live   | Ranked 5-round mode (auth-required)       |
+| `/leaderboard` | Live   | Global and daily leaderboards             |
+| `/profile`     | Live   | Username, email, sign out (auth-required) |
 
 ---
 

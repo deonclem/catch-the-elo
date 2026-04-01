@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 import { Copy, Check, ExternalLink } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
@@ -10,7 +11,10 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { ScoreBar } from './ScoreBar'
-import { generateShareText } from '@/lib/chess/scoring'
+import {
+  generateShareText,
+  getResultIllustrationSrc,
+} from '@/lib/chess/scoring'
 
 type Props = {
   open: boolean
@@ -67,6 +71,15 @@ export function ResultDialog({
         </DialogHeader>
 
         <div className="flex flex-col items-center gap-4 py-2">
+          {/* Illustration */}
+          <Image
+            src={getResultIllustrationSrc(score)}
+            alt={scoreLabel(score)}
+            width={180}
+            height={180}
+            className="rounded-xl"
+          />
+
           {/* Guess vs actual — hero */}
           <div className="flex w-full items-center justify-between gap-2">
             <div className="bg-muted/50 flex flex-1 flex-col items-center rounded-lg px-3 py-4">

@@ -1,12 +1,12 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
-import { Trophy } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ScoreBar } from '@/app/_components/ScoreBar'
 import { startRankedSession } from '@/lib/actions/ranked'
-import { RANKED_ROUNDS } from '@/lib/chess/scoring'
+import { RANKED_ROUNDS, getResultIllustrationSrc } from '@/lib/chess/scoring'
 import type { RoundResult } from '@/lib/dal/game_results'
 
 type Props = {
@@ -41,7 +41,13 @@ export function SessionCompleteCard({
   return (
     <div className="flex w-full max-w-sm flex-col items-center gap-6">
       <div className="text-center">
-        <Trophy className="text-primary mx-auto mb-2 size-10" />
+        <Image
+          src={getResultIllustrationSrc(Math.round(totalScore / RANKED_ROUNDS))}
+          alt=""
+          width={180}
+          height={180}
+          className="mx-auto mb-2 rounded-xl"
+        />
         <h2 className="text-2xl font-bold">Session Complete!</h2>
       </div>
 

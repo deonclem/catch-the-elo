@@ -1,4 +1,5 @@
 import { Flame } from 'lucide-react'
+import Link from 'next/link'
 import { cn } from '@/lib/utils'
 
 export type DayEntry = {
@@ -13,6 +14,7 @@ type Props = {
   days: DayEntry[]
   streak: number
   isLoggedIn: boolean
+  selectedDate: string
 }
 
 function formatDay(
@@ -31,7 +33,12 @@ function formatDay(
   return { weekday, label }
 }
 
-export function DailyCalendar({ days, streak, isLoggedIn }: Props) {
+export function DailyCalendar({
+  days,
+  streak,
+  isLoggedIn,
+  selectedDate,
+}: Props) {
   return (
     <div className="flex flex-col gap-3">
       {isLoggedIn && streak > 0 && (
@@ -49,14 +56,10 @@ export function DailyCalendar({ days, streak, isLoggedIn }: Props) {
       <div className="flex flex-col gap-1">
         {days.map((day) => {
           const { weekday, label } = formatDay(day.date, day.isToday)
-          return (
-            <div
-              key={day.date}
-              className={cn(
-                'flex items-center gap-2.5 rounded-lg px-2 py-1.5',
-                day.isToday && 'bg-primary/5'
-              )}
-            >
+          const isSelected = day.date === selectedDate
+
+          const rowContent = (
+            <>
               {/* Completion dot */}
               <div
                 className={cn(
@@ -72,7 +75,7 @@ export function DailyCalendar({ days, streak, isLoggedIn }: Props) {
                 <p
                   className={cn(
                     'text-xs leading-none font-medium',
-                    day.isToday ? 'text-foreground' : 'text-muted-foreground'
+                    isSelected ? 'text-foreground' : 'text-muted-foreground'
                   )}
                 >
                   {weekday}
@@ -86,7 +89,31 @@ export function DailyCalendar({ days, streak, isLoggedIn }: Props) {
                   {day.score.toLocaleString()}
                 </span>
               )}
-            </div>
+            </>
+          )
+
+          const rowClass = cn(
+            'flex items-center gap-2.5 rounded-lg px-2 py-1.5 transition-colors',
+            isSelected && 'bg-primary/10 ring-1 ring-primary/20',
+            !isSelected && day.gameId && 'hover:bg-muted/60 cursor-pointer'
+          )
+
+          if (!day.gameId) {
+            return (
+              <div key={day.date} className={rowClass}>
+                {rowContent}
+              </div>
+            )
+          }
+
+          return (
+            <Link
+              key={day.date}
+              href={day.isToday ? '/' : `/?date=${day.date}`}
+              className={rowClass}
+            >
+              {rowContent}
+            </Link>
           )
         })}
       </div>

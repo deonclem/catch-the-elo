@@ -40,7 +40,7 @@ export function Navbar({
     <>
       {/* Desktop: sticky top navbar with glassmorphism */}
       <header className="border-border/60 bg-background/80 fixed inset-x-0 top-0 z-50 hidden h-16 items-center border-b px-6 backdrop-blur-md md:flex">
-        <div className="flex w-full items-center justify-between">
+        <div className="grid w-full grid-cols-3 items-center">
           <Link href="/" className="flex items-center gap-2">
             <span className="text-lg font-bold tracking-tight">
               <span className="from-primary to-primary-end bg-gradient-to-r bg-clip-text text-transparent">
@@ -50,7 +50,7 @@ export function Navbar({
             </span>
           </Link>
 
-          <nav className="flex items-center gap-8">
+          <nav className="flex items-center justify-center gap-8">
             {NAV_LINKS.map(({ href, label }) => (
               <Link
                 key={href}
@@ -70,7 +70,7 @@ export function Navbar({
             ))}
           </nav>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center justify-end gap-3">
             {isLoggedIn && streak > 0 && (
               <div className="border-primary/30 bg-primary/10 text-primary flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm font-semibold">
                 <Flame className="size-3.5" />

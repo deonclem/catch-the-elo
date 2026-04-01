@@ -5,10 +5,15 @@ import {
   getDailyGameResultForUser,
   getResultsForDailyGames,
 } from '@/lib/dal/game_results'
-import { getDailyGame, getRecentDailyGames } from '@/lib/dal/games'
+import {
+  getDailyGame,
+  getDailyGameByDate,
+  getRecentDailyGames,
+} from '@/lib/dal/games'
 import { computeActiveStreak, getProfileByUserId } from '@/lib/dal/profiles'
 import { createClient } from '@/utils/supabase/server'
 import { cookies } from 'next/headers'
+import { redirect } from 'next/navigation'
 import { z } from 'zod'
 
 const dailyResultCookieSchema = z.object({
@@ -18,20 +23,40 @@ const dailyResultCookieSchema = z.object({
   score: z.number().int().min(0).max(5000),
 })
 
-const today = new Date().toISOString().split('T')[0]
-
-export default async function Home() {
+export default async function Home({
+  searchParams,
+}: {
+  searchParams: Promise<{ date?: string }>
+}) {
   const supabase = await createClient()
   const {
     data: { user },
   } = await supabase.auth.getUser()
+
+  const today = new Date().toISOString().split('T')[0]
+  const { date: dateParam } = await searchParams
 
   const [dailyGame, recentGames] = await Promise.all([
     getDailyGame(),
     getRecentDailyGames(7),
   ])
 
-  if (!dailyGame) {
+  // Validate date param — must be a past date within the recent games list
+  const validPastDates = new Set(
+    recentGames.map((g) => g.scheduled_for).filter((d) => d !== today)
+  )
+  if (dateParam !== undefined && !validPastDates.has(dateParam)) {
+    redirect('/')
+  }
+
+  const selectedDate = dateParam ?? today
+  const isToday = selectedDate === today
+
+  const targetGame = isToday
+    ? dailyGame
+    : await getDailyGameByDate(selectedDate)
+
+  if (!targetGame) {
     return (
       <main className="flex min-h-screen flex-col items-center justify-center">
         <p className="text-muted-foreground">No game scheduled for today.</p>
@@ -39,7 +64,7 @@ export default async function Home() {
     )
   }
 
-  const parsedGame = parseDailyGame(dailyGame)
+  const parsedGame = parseDailyGame(targetGame)
 
   // Build completion map for logged-in users
   let scoreMap = new Map<string, number>()
@@ -55,11 +80,11 @@ export default async function Home() {
       ),
     ])
     scoreMap = map
-    existingResult = scoreMap.has(dailyGame.id)
-      ? await getDailyGameResultForUser(user.id, dailyGame.id)
+    existingResult = scoreMap.has(targetGame.id)
+      ? await getDailyGameResultForUser(user.id, targetGame.id)
       : null
     streak = computeActiveStreak(profile)
-  } else {
+  } else if (isToday) {
     const cookieStore = await cookies()
     const raw = cookieStore.get('dte_daily_result')?.value
     if (raw) {
@@ -67,7 +92,7 @@ export default async function Home() {
         const parsed = dailyResultCookieSchema.safeParse(
           JSON.parse(decodeURIComponent(raw))
         )
-        if (parsed.success && parsed.data.gameId === dailyGame.id) {
+        if (parsed.success && parsed.data.gameId === targetGame.id) {
           const { guessElo, actualElo, score } = parsed.data
           existingResult = { guessElo, actualElo, score }
         }
@@ -90,11 +115,14 @@ export default async function Home() {
     <main className="flex flex-1 flex-col items-center justify-center p-12">
       <ChessGame
         game={parsedGame}
-        dailyGameId={dailyGame.id}
+        dailyGameId={isToday ? targetGame.id : undefined}
         existingResult={existingResult}
         recentDays={recentDays}
         isLoggedIn={user !== null}
         streak={streak}
+        isToday={isToday}
+        selectedDate={selectedDate}
+        pastDayElo={!isToday ? (targetGame.target_elo ?? null) : undefined}
       />
     </main>
   )

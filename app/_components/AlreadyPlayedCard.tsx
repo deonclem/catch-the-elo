@@ -1,12 +1,15 @@
 'use client'
 
+import Image from 'next/image'
 import { CheckCircle2, Clock } from 'lucide-react'
 import { ScoreBar } from './ScoreBar'
+import { getResultIllustrationSrc } from '@/lib/chess/scoring'
 
 type Props = {
   guessElo: number
   actualElo: number
   score: number
+  isToday?: boolean
 }
 
 function timeUntilNextGame(): string {
@@ -22,7 +25,12 @@ function timeUntilNextGame(): string {
   return `${hours}h ${minutes}m`
 }
 
-export function AlreadyPlayedCard({ guessElo, actualElo, score }: Props) {
+export function AlreadyPlayedCard({
+  guessElo,
+  actualElo,
+  score,
+  isToday = true,
+}: Props) {
   const diff = Math.abs(guessElo - actualElo)
   const timeLeft = timeUntilNextGame()
 
@@ -31,17 +39,28 @@ export function AlreadyPlayedCard({ guessElo, actualElo, score }: Props) {
       {/* Header */}
       <div className="border-border bg-muted/40 flex items-center gap-2 border-b px-4 py-3">
         <CheckCircle2 className="text-primary size-4" />
-        <span className="text-sm font-medium">Already played today</span>
+        <span className="text-sm font-medium">
+          {isToday ? 'Already played today' : 'Already played'}
+        </span>
       </div>
 
       {/* Stats */}
       <div className="flex flex-col items-center gap-4 px-4 py-5">
+        {/* Illustration */}
+        <Image
+          src={getResultIllustrationSrc(score)}
+          alt=""
+          width={120}
+          height={120}
+          className="rounded-lg"
+        />
+
         {/* Score */}
-        <div className="text-center">
-          <p className="text-primary text-3xl font-bold tabular-nums">
+        <div className="flex items-baseline justify-center gap-1.5 text-center">
+          <span className="text-primary text-3xl font-bold tabular-nums">
             {score.toLocaleString()}
-          </p>
-          <p className="text-muted-foreground mt-0.5 text-xs">out of 5,000</p>
+          </span>
+          <span className="text-muted-foreground text-sm">/ 5,000</span>
         </div>
 
         <ScoreBar score={score} />
@@ -66,10 +85,12 @@ export function AlreadyPlayedCard({ guessElo, actualElo, score }: Props) {
         </div>
 
         {/* Countdown */}
-        <div className="text-muted-foreground flex items-center gap-1.5 text-xs">
-          <Clock className="size-3.5" />
-          <span>Next game in {timeLeft}</span>
-        </div>
+        {isToday && (
+          <div className="text-muted-foreground flex items-center gap-1.5 text-xs">
+            <Clock className="size-3.5" />
+            <span>Next game in {timeLeft}</span>
+          </div>
+        )}
       </div>
     </div>
   )

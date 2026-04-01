@@ -28,6 +28,11 @@ export function calculateRatingChange(
   return Math.round(K_FACTOR * (score / 5000 - expected))
 }
 
+export function getResultIllustrationSrc(score: number): string {
+  const index = Math.max(1, Math.ceil((score / 5000) * 9))
+  return `/results/result_0${index}.png`
+}
+
 export function generateShareText(
   guess: number,
   actual: number,

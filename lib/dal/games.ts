@@ -47,6 +47,23 @@ export async function getDailyGame(): Promise<DailyGame | null> {
   }
 }
 
+export async function getDailyGameByDate(
+  date: string
+): Promise<DailyGame | null> {
+  const supabase = await createClient()
+  const { data } = await supabase
+    .from('daily_schedule')
+    .select('scheduled_for, games!inner(*)')
+    .eq('scheduled_for', date)
+    .is('deleted_at', null)
+    .single()
+  if (!data) return null
+  return {
+    ...(data.games as Tables<'games'>),
+    scheduled_for: data.scheduled_for,
+  }
+}
+
 export async function getRandomGames(n: number): Promise<Tables<'games'>[]> {
   const supabase = await createClient()
   const { data } = await supabase.rpc('get_random_games', { n })
