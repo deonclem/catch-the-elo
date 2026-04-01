@@ -1,9 +1,11 @@
-import type { Metadata } from 'next'
-import { Inter, Geist_Mono } from 'next/font/google'
 import { Navbar } from '@/components/layout/Navbar'
+import { computeActiveStreak, getProfileByUserId } from '@/lib/dal/profiles'
 import { createClient } from '@/utils/supabase/server'
-import { getProfileByUserId, computeActiveStreak } from '@/lib/dal/profiles'
+import { SpeedInsights } from '@vercel/speed-insights/next'
+import type { Metadata } from 'next'
+import { Geist_Mono, Inter } from 'next/font/google'
 import './globals.css'
+
 
 const inter = Inter({
   variable: '--font-sans',
@@ -44,6 +46,7 @@ export default async function RootLayout({
         <div className="flex flex-1 flex-col pb-14 md:pt-16 md:pb-0">
           {children}
         </div>
+        <SpeedInsights />
       </body>
     </html>
   )
