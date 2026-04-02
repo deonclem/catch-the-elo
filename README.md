@@ -1,4 +1,4 @@
-# Catch The Elo
+# Gueslo
 
 A competitive chess web app where players guess the average Elo rating of a match based on PGN data.
 

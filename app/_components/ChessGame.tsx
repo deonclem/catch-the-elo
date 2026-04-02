@@ -170,7 +170,11 @@ export function ChessGame({
       {/* Right column — guess form or result */}
       <div className="w-full max-w-[280px] shrink-0 lg:w-[220px]">
         {shownResult ? (
-          <AlreadyPlayedCard {...shownResult} isToday={isToday} />
+          <AlreadyPlayedCard
+            {...shownResult}
+            isToday={isToday}
+            date={selectedDate}
+          />
         ) : isToday ? (
           result === null && (
             <EloGuessForm

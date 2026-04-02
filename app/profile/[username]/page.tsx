@@ -14,7 +14,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { username } = await params
   const profile = await getProfileByUsername(username)
   if (!profile) return { title: 'Player not found' }
-  return { title: `${profile.username} — Catch the Elo` }
+  return { title: `${profile.username} — Gueslo` }
 }
 
 function Section({

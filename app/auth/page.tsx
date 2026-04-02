@@ -9,7 +9,7 @@ export default function AuthPage() {
     <main className="flex min-h-screen flex-col items-center justify-center p-4">
       <div className="w-full max-w-sm space-y-6">
         <div className="space-y-1 text-center">
-          <h1 className="text-2xl font-bold tracking-tight">CatchTheElo</h1>
+          <h1 className="text-2xl font-bold tracking-tight">Gueslo</h1>
           <p className="text-muted-foreground text-sm">
             Log in to track your ranking
           </p>

@@ -1,4 +1,4 @@
-# CLAUDE.md - Catch The Elo
+# CLAUDE.md - Gueslo
 
 @documents/platform-docs.md
 @documents/roadmap.md

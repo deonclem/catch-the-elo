@@ -1,4 +1,4 @@
-# Platform Docs — Catch The Elo
+# Platform Docs — Gueslo
 
 ## What Is This App
 
@@ -63,9 +63,9 @@ Formula: `score = round(5000 × e^(-((max(0, |guess - actual| - 20) / 400))²))`
 **Share text format:**
 
 ```
-Catch The Elo 🎯
-♟️ Rapid | Off by 47
+Gueslo — April 2, 2026
 🟩🟩🟩⬛⬛ 3,200/5,000
+https://gueslo.app
 ```
 
 ---

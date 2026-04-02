@@ -1,15 +1,21 @@
 'use client'
 
 import Image from 'next/image'
-import { CheckCircle2, Clock } from 'lucide-react'
+import { CheckCircle2, Clock, Copy, Check } from 'lucide-react'
+import { useState } from 'react'
+import { Button } from '@/components/ui/button'
 import { ScoreBar } from './ScoreBar'
-import { getResultIllustrationSrc } from '@/lib/chess/scoring'
+import {
+  getResultIllustrationSrc,
+  generateShareText,
+} from '@/lib/chess/scoring'
 
 type Props = {
   guessElo: number
   actualElo: number
   score: number
   isToday?: boolean
+  date?: string
 }
 
 function timeUntilNextGame(): string {
@@ -30,9 +36,21 @@ export function AlreadyPlayedCard({
   actualElo,
   score,
   isToday = true,
+  date,
 }: Props) {
+  const [copied, setCopied] = useState(false)
   const diff = Math.abs(guessElo - actualElo)
   const timeLeft = timeUntilNextGame()
+
+  const handleCopy = () => {
+    const text = generateShareText(
+      score,
+      date ?? new Date().toISOString().slice(0, 10)
+    )
+    void navigator.clipboard.writeText(text)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
 
   return (
     <div className="border-border bg-card w-full overflow-hidden rounded-xl border">
@@ -83,6 +101,26 @@ export function AlreadyPlayedCard({
             Off by <span className="text-foreground font-medium">{diff}</span>
           </div>
         </div>
+
+        {/* Share */}
+        <Button
+          variant="outline"
+          size="sm"
+          className="w-full gap-2"
+          onClick={handleCopy}
+        >
+          {copied ? (
+            <>
+              <Check className="size-4" />
+              Copied!
+            </>
+          ) : (
+            <>
+              <Copy className="size-4" />
+              Share result
+            </>
+          )}
+        </Button>
 
         {/* Countdown */}
         {isToday && (

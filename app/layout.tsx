@@ -18,7 +18,7 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: 'Catch The Elo',
+  title: 'Gueslo',
   description: 'Guess the average Elo rating of a chess match.',
 }
 

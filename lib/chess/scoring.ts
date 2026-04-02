@@ -43,8 +43,8 @@ export function generateShareText(score: number, date: string): string {
     year: 'numeric',
   })
   return [
-    `Catch The Elo — ${dateLabel}`,
+    `Gueslo - ${dateLabel}`,
     `${bar} ${score.toLocaleString()}/5,000`,
-    `catchtheelo.com`,
+    `https://gueslo.app`,
   ].join('\n')
 }
