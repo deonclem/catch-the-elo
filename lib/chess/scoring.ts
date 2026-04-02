@@ -33,20 +33,18 @@ export function getResultIllustrationSrc(score: number): string {
   return `/results/result_0${index}.png`
 }
 
-export function generateShareText(
-  guess: number,
-  actual: number,
-  score: number,
-  speed: string
-): string {
-  const diff = Math.abs(guess - actual)
+export function generateShareText(score: number, date: string): string {
   const bar = Array.from({ length: 5 }, (_, i) =>
     score >= (i + 1) * 1000 ? '🟩' : '⬛'
   ).join('')
-  const speedLabel = speed.charAt(0).toUpperCase() + speed.slice(1)
+  const dateLabel = new Date(`${date}T12:00:00`).toLocaleDateString('en-US', {
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+  })
   return [
-    `Catch The Elo 🎯`,
-    `♟️ ${speedLabel} | Off by ${diff}`,
+    `Catch The Elo — ${dateLabel}`,
     `${bar} ${score.toLocaleString()}/5,000`,
+    `catchtheelo.com`,
   ].join('\n')
 }

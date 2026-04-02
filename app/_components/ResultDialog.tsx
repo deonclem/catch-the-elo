@@ -22,7 +22,7 @@ type Props = {
   guess: number
   actual: number
   score: number
-  speed: string
+  date?: string
   lichessUrl?: string
   ratingChange?: number
   nextLabel?: string
@@ -42,7 +42,7 @@ export function ResultDialog({
   guess,
   actual,
   score,
-  speed,
+  date,
   lichessUrl,
   ratingChange,
   nextLabel,
@@ -50,7 +50,10 @@ export function ResultDialog({
   const [copied, setCopied] = useState(false)
 
   const handleCopy = () => {
-    const text = generateShareText(guess, actual, score, speed)
+    const text = generateShareText(
+      score,
+      date ?? new Date().toISOString().slice(0, 10)
+    )
     void navigator.clipboard.writeText(text)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)

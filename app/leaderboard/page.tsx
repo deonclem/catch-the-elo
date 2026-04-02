@@ -76,7 +76,6 @@ function DailyRow({
   entry: LeaderboardEntry
   isCurrentUser: boolean
 }) {
-  const offBy = Math.abs(entry.guessElo - entry.actualElo)
   return (
     <tr
       className={cn(
@@ -110,7 +109,6 @@ function DailyRow({
       </td>
       <td className="py-2.5 pr-4 text-right tabular-nums">
         {entry.score.toLocaleString()}
-        <span className="text-muted-foreground ml-1 text-xs">−{offBy}</span>
       </td>
     </tr>
   )

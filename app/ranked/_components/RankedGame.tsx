@@ -150,7 +150,6 @@ export function RankedGame({ session, games, completedRounds }: Props) {
           guess={pendingResult.guessElo}
           actual={pendingResult.actualElo}
           score={pendingResult.score}
-          speed={currentGame?.timeControl ?? ''}
           lichessUrl={
             currentGame?.id
               ? `https://lichess.org/${currentGame.id}`

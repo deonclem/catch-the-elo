@@ -191,7 +191,7 @@ export function ChessGame({
           guess={Number(guess)}
           actual={result.actual}
           score={result.score}
-          speed={game.timeControl}
+          date={selectedDate}
           lichessUrl={game.id ? `https://lichess.org/${game.id}` : undefined}
         />
       )}
