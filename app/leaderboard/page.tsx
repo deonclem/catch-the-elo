@@ -229,9 +229,14 @@ export default async function LeaderboardPage() {
 
   return (
     <main className="mx-auto flex min-h-screen max-w-4xl flex-col gap-6 p-4 pb-24 md:pb-8">
-      <div className="pt-4">
-        <h1 className="text-2xl font-bold">Leaderboard</h1>
-        <p className="text-muted-foreground text-sm">{today}</p>
+      <div className="pt-4 text-center">
+        <h1 className="text-3xl font-bold tracking-tight md:text-4xl">
+          <span className="from-primary to-primary-end bg-gradient-to-r bg-clip-text text-transparent">
+            Leader
+          </span>
+          board
+        </h1>
+        <p className="text-muted-foreground mt-1 text-sm">{today}</p>
       </div>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">

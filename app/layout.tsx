@@ -1,4 +1,5 @@
 import { Navbar } from '@/components/layout/Navbar'
+import Link from 'next/link'
 import { computeActiveStreak, getProfileByUserId } from '@/lib/dal/profiles'
 import { createClient } from '@/utils/supabase/server'
 import { Analytics } from '@vercel/analytics/next'
@@ -45,6 +46,14 @@ export default async function RootLayout({
         />
         <div className="flex flex-1 flex-col pb-14 md:pt-16 md:pb-0">
           {children}
+          <footer className="flex justify-center py-6 md:justify-end md:px-6">
+            <Link
+              href="/privacy"
+              className="text-muted-foreground text-xs hover:underline"
+            >
+              Privacy Policy
+            </Link>
+          </footer>
         </div>
         <SpeedInsights />
         <Analytics />
