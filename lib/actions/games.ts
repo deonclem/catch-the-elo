@@ -35,6 +35,19 @@ export async function submitDailyResult(
   })
   if (!parsed.success) return { alreadySubmitted: false }
 
+  // Verify the submitted gameId matches today's daily game (prevents submitting for past games)
+  const today = new Date().toISOString().split('T')[0]
+  const { data: todaysGame } = await supabase
+    .from('daily_schedule')
+    .select('games!inner(id)')
+    .eq('scheduled_for', today)
+    .is('deleted_at', null)
+    .single()
+  const todaysGameId = (todaysGame?.games as { id: string } | null)?.id
+  if (todaysGameId !== parsed.data.gameId) {
+    throw new Error('Submitted game is not the current daily game')
+  }
+
   const existing = await getDailyGameResultForUser(user.id, gameId)
   if (existing) return { alreadySubmitted: true }
 

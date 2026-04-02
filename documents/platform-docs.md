@@ -11,7 +11,7 @@ Players are shown a real chess game with player names and ratings hidden. They n
 | Route          | Status | Description                               |
 | -------------- | ------ | ----------------------------------------- |
 | `/`            | Live   | Daily chess challenge                     |
-| `/auth`        | Live   | Sign in / Sign up                         |
+| `/auth`        | Live   | Log in / Sign up (email + Google OAuth)   |
 | `/onboarding`  | Live   | Username picker (OAuth users)             |
 | `/ranked`      | Live   | Ranked 5-round mode (auth-required)       |
 | `/leaderboard` | Live   | Global and daily leaderboards             |
@@ -83,11 +83,12 @@ Catch The Elo 🎯
 
 - Standard `signInWithPassword()`; generic "Incorrect email or password" on failure
 
-### Google OAuth (disabled, coming soon)
+### Google OAuth
 
-- Will create auth user with `username = null`
-- Middleware detects `username = null` → redirects to `/onboarding`
-- User picks username; redirected to `/`
+- `signInWithGoogle` server action calls `supabase.auth.signInWithOAuth()` → redirects to Google consent screen
+- Callback at `/auth/callback` exchanges the code for a session
+- New Google users have `username = null` → middleware redirects to `/onboarding` → user picks username → redirected to `/`
+- Requires `NEXT_PUBLIC_SITE_URL` env var (e.g. `http://localhost:3000` for dev, production URL on Vercel)
 
 ### Onboarding (`/onboarding`)
 

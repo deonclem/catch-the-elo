@@ -1,7 +1,7 @@
 import { SignInForm } from './_components/SignInForm'
 import { SignUpForm } from './_components/SignUpForm'
+import { GoogleButton } from './_components/GoogleButton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 
 export default function AuthPage() {
@@ -11,21 +11,21 @@ export default function AuthPage() {
         <div className="space-y-1 text-center">
           <h1 className="text-2xl font-bold tracking-tight">CatchTheElo</h1>
           <p className="text-muted-foreground text-sm">
-            Sign in to track your ranking
+            Log in to track your ranking
           </p>
         </div>
 
-        <Tabs defaultValue="signin">
+        <Tabs defaultValue="login">
           <TabsList className="w-full">
-            <TabsTrigger value="signin" className="flex-1">
-              Sign In
+            <TabsTrigger value="login" className="flex-1">
+              Log In
             </TabsTrigger>
             <TabsTrigger value="signup" className="flex-1">
               Sign Up
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="signin" className="pt-4">
+          <TabsContent value="login" className="pt-4">
             <SignInForm />
           </TabsContent>
 
@@ -42,12 +42,7 @@ export default function AuthPage() {
             </span>
           </div>
 
-          <Button variant="outline" className="w-full" disabled>
-            Sign in with Google
-            <span className="bg-muted text-muted-foreground ml-2 rounded px-1.5 py-0.5 text-xs">
-              Coming soon
-            </span>
-          </Button>
+          <GoogleButton />
         </div>
       </div>
     </main>

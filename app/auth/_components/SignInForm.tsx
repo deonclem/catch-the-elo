@@ -89,7 +89,7 @@ export function SignInForm() {
         )}
 
         <Button type="submit" className="w-full" disabled={isPending}>
-          {isPending ? 'Signing in…' : 'Sign In'}
+          {isPending ? 'Logging in…' : 'Log In'}
         </Button>
       </form>
     </Form>
