@@ -14,8 +14,9 @@ Players are shown a real chess game with player names and ratings hidden. They n
 | `/auth`        | Live   | Log in / Sign up (email + Google OAuth)   |
 | `/onboarding`  | Live   | Username picker (OAuth users)             |
 | `/ranked`      | Live   | Ranked 5-round mode (auth-required)       |
-| `/leaderboard` | Live   | Global and daily leaderboards             |
-| `/profile`     | Live   | Username, email, sign out (auth-required) |
+| `/leaderboard`          | Live   | Global and daily leaderboards                     |
+| `/profile`              | Live   | Username, email, sign out (auth-required)         |
+| `/profile/[username]`   | Live   | Public read-only profile (no auth required)       |
 
 ---
 
@@ -78,8 +79,9 @@ Catch The Elo 🎯
 3. Username written to `profiles` table immediately
 4. Password rules: ≥8 chars, ≥1 uppercase, ≥1 digit
 5. Username rules: 3–20 chars, alphanumeric + underscores
+6. Profanity filter applied via `leo-profanity` (English + French word lists) + reserved names list (`lib/username-filter.ts`)
 
-### Email/password sign in
+### Email/password log in
 
 - Standard `signInWithPassword()`; generic "Incorrect email or password" on failure
 
@@ -99,7 +101,7 @@ Catch The Elo 🎯
 
 ## Navigation
 
-**Desktop (md+):** Sticky top bar — Logo | Daily · Ranked · Leaderboard | Sign In / My Profile
+**Desktop (md+):** Sticky top bar — Logo | Daily · Ranked · Leaderboard | Log In / My Profile
 
 **Mobile (<md):** Fixed bottom bar — Daily (⚡) · Ranked (⚔️) · Leaderboard (🏆) · Profile (👤)
 

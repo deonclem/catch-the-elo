@@ -37,6 +37,19 @@ export async function getProfileByUserId(
   return data
 }
 
+export async function getProfileByUsername(
+  username: string
+): Promise<Profile | null> {
+  const supabase = await createClient()
+  const { data } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('username', username)
+    .is('deleted_at', null)
+    .single()
+  return data
+}
+
 export async function upsertUsername(
   userId: string,
   username: string

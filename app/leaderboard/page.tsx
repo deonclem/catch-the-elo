@@ -1,6 +1,7 @@
 import { createClient } from '@/utils/supabase/server'
 import { getDailyGame } from '@/lib/dal/games'
 import { Target, Flame, Swords } from 'lucide-react'
+import Link from 'next/link'
 import {
   getDailyLeaderboard,
   type LeaderboardEntry,
@@ -90,14 +91,21 @@ function DailyRow({
       <td className="py-2.5 pr-2">
         <div className="flex items-center gap-2">
           <UserAvatar slug={entry.avatarSlug} size="sm" />
-          <span>
-            {entry.username ?? 'Anonymous'}
-            {isCurrentUser && (
-              <span className="text-primary ml-1 text-xs font-normal">
-                (you)
-              </span>
-            )}
-          </span>
+          {entry.username ? (
+            <Link
+              href={isCurrentUser ? '/profile' : `/profile/${entry.username}`}
+              className="hover:underline"
+            >
+              {entry.username}
+              {isCurrentUser && (
+                <span className="text-primary ml-1 text-xs font-normal">
+                  (you)
+                </span>
+              )}
+            </Link>
+          ) : (
+            <span>Anonymous</span>
+          )}
         </div>
       </td>
       <td className="py-2.5 pr-4 text-right tabular-nums">
@@ -129,14 +137,21 @@ function StreakRow({
       <td className="py-2.5 pr-2">
         <div className="flex items-center gap-2">
           <UserAvatar slug={entry.avatarSlug} size="sm" />
-          <span>
-            {entry.username ?? 'Anonymous'}
-            {isCurrentUser && (
-              <span className="text-primary ml-1 text-xs font-normal">
-                (you)
-              </span>
-            )}
-          </span>
+          {entry.username ? (
+            <Link
+              href={isCurrentUser ? '/profile' : `/profile/${entry.username}`}
+              className="hover:underline"
+            >
+              {entry.username}
+              {isCurrentUser && (
+                <span className="text-primary ml-1 text-xs font-normal">
+                  (you)
+                </span>
+              )}
+            </Link>
+          ) : (
+            <span>Anonymous</span>
+          )}
         </div>
       </td>
       <td className="py-2.5 pr-4 text-right tabular-nums">
@@ -170,14 +185,21 @@ function RatingRow({
       <td className="py-2.5 pr-2">
         <div className="flex items-center gap-2">
           <UserAvatar slug={entry.avatarSlug} size="sm" />
-          <span>
-            {entry.username ?? 'Anonymous'}
-            {isCurrentUser && (
-              <span className="text-primary ml-1 text-xs font-normal">
-                (you)
-              </span>
-            )}
-          </span>
+          {entry.username ? (
+            <Link
+              href={isCurrentUser ? '/profile' : `/profile/${entry.username}`}
+              className="hover:underline"
+            >
+              {entry.username}
+              {isCurrentUser && (
+                <span className="text-primary ml-1 text-xs font-normal">
+                  (you)
+                </span>
+              )}
+            </Link>
+          ) : (
+            <span>Anonymous</span>
+          )}
         </div>
       </td>
       <td className="py-2.5 pr-4 text-right tabular-nums">{entry.rating}</td>

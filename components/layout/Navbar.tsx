@@ -1,11 +1,11 @@
 'use client'
 
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import { Zap, Swords, Trophy, User, Flame } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { UserAvatar } from '@/components/ui/UserAvatar'
 import { cn } from '@/lib/utils'
+import { Flame, Swords, Trophy, User, Zap } from 'lucide-react'
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 
 const NAV_LINKS = [
   { href: '/', label: 'Daily' },
@@ -90,7 +90,7 @@ export function Navbar({
               {isLoggedIn ? (
                 <Link href="/profile">My Profile</Link>
               ) : (
-                <Link href="/auth">Sign In</Link>
+                <Link href="/auth">Log In</Link>
               )}
             </Button>
           </div>
