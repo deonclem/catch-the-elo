@@ -1,16 +1,17 @@
 'use server'
 
-import { redirect } from 'next/navigation'
-import { createClient } from '@/utils/supabase/server'
 import { upsertUsername } from '@/lib/dal/profiles'
+import { isUsernameAllowed } from '@/lib/username-filter'
 import {
-  signUpSchema,
   signInSchema,
+  signUpSchema,
   usernameSchema,
-  type SignUpValues,
   type SignInValues,
+  type SignUpValues,
   type UsernameValues,
 } from '@/lib/validations/auth'
+import { createClient } from '@/utils/supabase/server'
+import { redirect } from 'next/navigation'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -35,6 +36,11 @@ export async function signUp(
   }
 
   const { email, password, username } = parsed.data
+
+  if (isUsernameAllowed(username)) {
+    return { errors: { username: ['This username is not allowed'] } }
+  }
+
   const supabase = await createClient()
 
   const { data: authData, error: signUpError } = await supabase.auth.signUp({
@@ -133,6 +139,10 @@ export async function setUsername(
   } = await supabase.auth.getUser()
 
   if (!user) redirect('/auth')
+
+  if (isUsernameAllowed(parsed.data.username)) {
+    return { errors: { username: ['This username is not allowed'] } }
+  }
 
   const { error } = await upsertUsername(user.id, parsed.data.username)
   if (error === 'username_taken') {
