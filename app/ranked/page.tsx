@@ -1,4 +1,11 @@
+import type { Metadata } from 'next'
 import { parseDailyGame } from '@/lib/chess/parser'
+
+export const metadata: Metadata = {
+  title: 'Ranked Mode',
+  description:
+    '5-round ranked sessions. Earn an Elo rating based on your Elo guesses.',
+}
 import { getRankedSessionResults } from '@/lib/dal/game_results'
 import { getProfileByUserId } from '@/lib/dal/profiles'
 import {

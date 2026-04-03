@@ -1,4 +1,9 @@
+import type { Metadata } from 'next'
 import { SignInForm } from './_components/SignInForm'
+
+export const metadata: Metadata = {
+  title: 'Sign In',
+}
 import { SignUpForm } from './_components/SignUpForm'
 import { GoogleButton } from './_components/GoogleButton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'

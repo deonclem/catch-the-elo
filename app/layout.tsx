@@ -19,8 +19,37 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: 'Gueslo',
-  description: 'Guess the average Elo rating of a chess match.',
+  title: {
+    default: 'Gueslo — Guess the Elo',
+    template: '%s — Gueslo',
+  },
+  description:
+    'Can you guess the Elo rating of a chess game? Play the daily challenge or ranked mode. The best Elo guesser game online.',
+  keywords: [
+    'guess the elo',
+    'elo guesser',
+    'elogussr',
+    'chess elo game',
+    'daily chess challenge',
+    'chess rating game',
+    'gueslo',
+  ],
+  metadataBase: new URL('https://gueslo.app'),
+  openGraph: {
+    type: 'website',
+    siteName: 'Gueslo',
+    title: 'Gueslo — Guess the Elo',
+    description:
+      'Can you guess the Elo rating of a chess game? Play the daily challenge or ranked mode.',
+    url: 'https://gueslo.app',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Gueslo — Guess the Elo',
+    description:
+      'Can you guess the Elo rating of a chess game? Play the daily challenge or ranked mode.',
+  },
+  alternates: { canonical: 'https://gueslo.app' },
 }
 
 export default async function RootLayout({

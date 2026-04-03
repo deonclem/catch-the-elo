@@ -1,4 +1,11 @@
+import type { Metadata } from 'next'
 import { createClient } from '@/utils/supabase/server'
+
+export const metadata: Metadata = {
+  title: 'Leaderboard',
+  description:
+    'Top Elo guessers worldwide. See the daily and all-time rankings.',
+}
 import { getDailyGame } from '@/lib/dal/games'
 import { Target, Flame, Swords } from 'lucide-react'
 import Link from 'next/link'

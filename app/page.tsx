@@ -1,5 +1,5 @@
-import { ChessGame } from './_components/ChessGame'
 import type { DayEntry } from './_components/DailyCalendar'
+import { ChessGame } from './_components/ChessGame'
 import { parseDailyGame } from '@/lib/chess/parser'
 import {
   getDailyGameResultForUser,
@@ -13,8 +13,28 @@ import {
 import { computeActiveStreak, getProfileByUserId } from '@/lib/dal/profiles'
 import { createClient } from '@/utils/supabase/server'
 import { cookies } from 'next/headers'
+import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { z } from 'zod'
+
+export const metadata: Metadata = {
+  title: 'Daily Challenge',
+  description:
+    "Guess today's chess game Elo. A new game every day — no account needed.",
+  alternates: { canonical: 'https://gueslo.app' },
+}
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'WebApplication',
+  name: 'Gueslo',
+  description:
+    'Guess the Elo rating of a chess game. Daily challenge and ranked mode.',
+  url: 'https://gueslo.app',
+  applicationCategory: 'Game',
+  genre: 'Chess',
+  offers: { '@type': 'Offer', price: '0' },
+}
 
 const dailyResultCookieSchema = z.object({
   gameId: z.string().uuid(),
@@ -112,18 +132,24 @@ export default async function Home({
   }))
 
   return (
-    <main className="flex flex-1 flex-col items-center justify-center p-12">
-      <ChessGame
-        game={parsedGame}
-        dailyGameId={isToday ? targetGame.id : undefined}
-        existingResult={existingResult}
-        recentDays={recentDays}
-        isLoggedIn={user !== null}
-        streak={streak}
-        isToday={isToday}
-        selectedDate={selectedDate}
-        pastDayElo={!isToday ? (targetGame.target_elo ?? null) : undefined}
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-    </main>
+      <main className="flex flex-1 flex-col items-center justify-center p-12">
+        <ChessGame
+          game={parsedGame}
+          dailyGameId={isToday ? targetGame.id : undefined}
+          existingResult={existingResult}
+          recentDays={recentDays}
+          isLoggedIn={user !== null}
+          streak={streak}
+          isToday={isToday}
+          selectedDate={selectedDate}
+          pastDayElo={!isToday ? (targetGame.target_elo ?? null) : undefined}
+        />
+      </main>
+    </>
   )
 }
