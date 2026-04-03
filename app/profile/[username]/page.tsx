@@ -1,11 +1,7 @@
-import { EloChart } from '@/app/profile/_components/EloChart'
-import { ProfileCalendar } from '@/app/profile/_components/ProfileCalendar'
-import { UserAvatar } from '@/components/ui/UserAvatar'
+import { ProfileContent } from '@/app/profile/_components/ProfileContent'
 import { getUserDailyHistory } from '@/lib/dal/game_results'
 import { computeActiveStreak, getProfileByUsername } from '@/lib/dal/profiles'
-import { RANKED_ROUNDS } from '@/lib/chess/scoring'
 import { getPublicUserRankedSessionHistory } from '@/lib/dal/ranked_sessions'
-import { Hash, Swords, Trophy } from 'lucide-react'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
@@ -16,41 +12,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const profile = await getProfileByUsername(username)
   if (!profile) return { title: 'Player not found' }
   return { title: `${profile.username} — Gueslo` }
-}
-
-function Section({
-  title,
-  children,
-}: {
-  title: string
-  children: React.ReactNode
-}) {
-  return (
-    <section className="flex flex-col gap-3">
-      <h2 className="text-muted-foreground text-xs font-semibold tracking-widest uppercase">
-        {title}
-      </h2>
-      {children}
-    </section>
-  )
-}
-
-function StatCard({
-  icon,
-  value,
-  label,
-}: {
-  icon: React.ReactNode
-  value: React.ReactNode
-  label: string
-}) {
-  return (
-    <div className="bg-card border-border flex flex-col items-center gap-1.5 rounded-xl border p-4">
-      <div className="text-primary">{icon}</div>
-      <p className="text-xl font-bold tabular-nums">{value}</p>
-      <p className="text-muted-foreground text-xs">{label}</p>
-    </div>
-  )
 }
 
 export default async function PublicProfilePage({ params }: Props) {
@@ -66,61 +27,11 @@ export default async function PublicProfilePage({ params }: Props) {
   const activeStreak = computeActiveStreak(profile)
 
   return (
-    <main className="flex flex-1 flex-col items-center p-4 pt-8 pb-10">
-      <div className="flex w-full max-w-md flex-col gap-8">
-        {/* ── 1. Profile ── */}
-        <Section title="Profile">
-          <div className="bg-card border-border flex items-center gap-4 rounded-xl border p-4">
-            <UserAvatar slug={profile.avatar_slug} size="lg" />
-            <div className="min-w-0">
-              <p className="truncate font-semibold">{profile.username}</p>
-              <p className="text-muted-foreground text-sm">
-                Member since{' '}
-                {new Date(profile.created_at).toLocaleDateString('en-US', {
-                  month: 'long',
-                  year: 'numeric',
-                })}
-              </p>
-            </div>
-          </div>
-        </Section>
-
-        {/* ── 2. Ranked ── */}
-        <Section title="Ranked">
-          <div className="grid grid-cols-3 gap-3">
-            <StatCard
-              icon={<Swords className="size-5" />}
-              value={profile.rating ?? 1200}
-              label="Rating"
-            />
-            <StatCard
-              icon={<Trophy className="size-5" />}
-              value={profile.highest_score?.toLocaleString() ?? '—'}
-              label="Best score"
-            />
-            <StatCard
-              icon={<Hash className="size-5" />}
-              value={rankedHistory.length * RANKED_ROUNDS}
-              label="Rounds played"
-            />
-          </div>
-          {rankedHistory.length > 0 && (
-            <EloChart
-              history={rankedHistory}
-              profileCreatedAt={profile.created_at}
-            />
-          )}
-        </Section>
-
-        {/* ── 3. Daily ── */}
-        <Section title="Daily">
-          <ProfileCalendar
-            history={history}
-            activeStreak={activeStreak}
-            bestStreak={profile.best_streak ?? 0}
-          />
-        </Section>
-      </div>
-    </main>
+    <ProfileContent
+      profile={profile}
+      history={history}
+      rankedHistory={rankedHistory}
+      activeStreak={activeStreak}
+    />
   )
 }

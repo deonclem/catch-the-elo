@@ -1,51 +1,9 @@
-import { ProfileCalendar } from './_components/ProfileCalendar'
-import { DeleteAccountDialog } from './_components/DeleteAccountDialog'
-import { AvatarPickerDialog } from './_components/AvatarPickerDialog'
-import { EloChart } from './_components/EloChart'
-import { Button } from '@/components/ui/button'
-import { signOut } from '@/lib/actions/auth'
+import { ProfileContent } from './_components/ProfileContent'
 import { getUserDailyHistory } from '@/lib/dal/game_results'
 import { computeActiveStreak, getProfileByUserId } from '@/lib/dal/profiles'
-import { RANKED_ROUNDS } from '@/lib/chess/scoring'
 import { getUserRankedSessionHistory } from '@/lib/dal/ranked_sessions'
 import { createClient } from '@/utils/supabase/server'
-import { Hash, Swords, Trophy } from 'lucide-react'
 import { redirect } from 'next/navigation'
-
-function Section({
-  title,
-  children,
-}: {
-  title: string
-  children: React.ReactNode
-}) {
-  return (
-    <section className="flex flex-col gap-3">
-      <h2 className="text-muted-foreground text-xs font-semibold tracking-widest uppercase">
-        {title}
-      </h2>
-      {children}
-    </section>
-  )
-}
-
-function StatCard({
-  icon,
-  value,
-  label,
-}: {
-  icon: React.ReactNode
-  value: React.ReactNode
-  label: string
-}) {
-  return (
-    <div className="bg-card border-border flex flex-col items-center gap-1.5 rounded-xl border p-4">
-      <div className="text-primary">{icon}</div>
-      <p className="text-xl font-bold tabular-nums">{value}</p>
-      <p className="text-muted-foreground text-xs">{label}</p>
-    </div>
-  )
-}
 
 export default async function ProfilePage() {
   const supabase = await createClient()
@@ -61,72 +19,17 @@ export default async function ProfilePage() {
     getUserRankedSessionHistory(user.id),
   ])
 
+  if (!profile) redirect('/auth')
+
   const activeStreak = computeActiveStreak(profile)
 
   return (
-    <main className="flex flex-1 flex-col items-center p-4 pt-8 pb-10">
-      <div className="flex w-full max-w-md flex-col gap-8">
-        {/* ── 1. Profile ── */}
-        <Section title="Profile">
-          <div className="bg-card border-border flex items-center gap-4 rounded-xl border p-4">
-            <AvatarPickerDialog currentSlug={profile?.avatar_slug ?? null} />
-            <div className="min-w-0 flex-1">
-              <p className="truncate font-semibold">
-                {profile?.username ?? 'Anonymous'}
-              </p>
-              <p className="text-muted-foreground truncate text-sm">
-                {user.email}
-              </p>
-            </div>
-          </div>
-        </Section>
-
-        {/* ── 2. Ranked ── */}
-        <Section title="Ranked">
-          <div className="grid grid-cols-3 gap-3">
-            <StatCard
-              icon={<Swords className="size-5" />}
-              value={profile?.rating ?? 1200}
-              label="Rating"
-            />
-            <StatCard
-              icon={<Trophy className="size-5" />}
-              value={profile?.highest_score?.toLocaleString() ?? '—'}
-              label="Best score"
-            />
-            <StatCard
-              icon={<Hash className="size-5" />}
-              value={rankedHistory.length * RANKED_ROUNDS}
-              label="Rounds played"
-            />
-          </div>
-          {profile && (
-            <EloChart
-              history={rankedHistory}
-              profileCreatedAt={profile.created_at}
-            />
-          )}
-        </Section>
-
-        {/* ── 3. Daily ── */}
-        <Section title="Daily">
-          <ProfileCalendar
-            history={history}
-            activeStreak={activeStreak}
-            bestStreak={profile?.best_streak ?? 0}
-          />
-        </Section>
-
-        {/* ── 4. Account ── */}
-        <Section title="Account">
-          <form action={signOut}>
-            <Button type="submit" variant="outline" className="w-full">
-              Sign out
-            </Button>
-          </form>
-          <DeleteAccountDialog />
-        </Section>
-      </div>
-    </main>
+    <ProfileContent
+      profile={profile}
+      history={history}
+      rankedHistory={rankedHistory}
+      activeStreak={activeStreak}
+      email={user.email}
+    />
   )
 }
