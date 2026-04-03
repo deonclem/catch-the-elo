@@ -1,6 +1,10 @@
 import { ProfileContent } from '@/app/profile/_components/ProfileContent'
 import { getUserDailyHistory } from '@/lib/dal/game_results'
-import { computeActiveStreak, getProfileByUsername } from '@/lib/dal/profiles'
+import {
+  computeActiveStreak,
+  computeStreakStatus,
+  getProfileByUsername,
+} from '@/lib/dal/profiles'
 import { getPublicUserRankedSessionHistory } from '@/lib/dal/ranked_sessions'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
@@ -25,6 +29,7 @@ export default async function PublicProfilePage({ params }: Props) {
   ])
 
   const activeStreak = computeActiveStreak(profile)
+  const streakStatus = computeStreakStatus(profile)
 
   return (
     <ProfileContent
@@ -32,6 +37,7 @@ export default async function PublicProfilePage({ params }: Props) {
       history={history}
       rankedHistory={rankedHistory}
       activeStreak={activeStreak}
+      streakStatus={streakStatus}
     />
   )
 }

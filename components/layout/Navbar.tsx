@@ -1,9 +1,12 @@
 'use client'
 
+'use client'
+
 import { Button } from '@/components/ui/button'
 import { UserAvatar } from '@/components/ui/UserAvatar'
 import { cn } from '@/lib/utils'
-import { Flame, Swords, Trophy, User, Zap } from 'lucide-react'
+import type { StreakStatus } from '@/lib/dal/profiles'
+import { Flame, Snowflake, Swords, Trophy, User, Zap } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
@@ -27,10 +30,12 @@ function isActive(pathname: string, href: string): boolean {
 export function Navbar({
   isLoggedIn,
   streak = 0,
+  streakStatus = 'none',
   avatarSlug = null,
 }: {
   isLoggedIn: boolean
   streak?: number
+  streakStatus?: StreakStatus
   avatarSlug?: string | null
 }) {
   const pathname = usePathname()
@@ -69,8 +74,19 @@ export function Navbar({
 
           <div className="flex items-center justify-end gap-3">
             {isLoggedIn && streak > 0 && (
-              <div className="border-primary/30 bg-primary/10 text-primary flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm font-semibold">
-                <Flame className="size-3.5" />
+              <div
+                className={cn(
+                  'flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm font-semibold',
+                  streakStatus === 'at_risk'
+                    ? 'border-sky-400/30 bg-sky-400/10 text-sky-400'
+                    : 'border-primary/30 bg-primary/10 text-primary'
+                )}
+              >
+                {streakStatus === 'at_risk' ? (
+                  <Snowflake className="size-3.5" />
+                ) : (
+                  <Flame className="size-3.5" />
+                )}
                 <span>{streak}</span>
               </div>
             )}

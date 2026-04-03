@@ -3,6 +3,7 @@
 import { Button } from '@/components/ui/button'
 import { Calendar, CalendarDayButton } from '@/components/ui/calendar'
 import type { DailyHistoryEntry } from '@/lib/dal/game_results'
+import type { StreakStatus } from '@/lib/dal/profiles'
 import {
   Award,
   CalendarDays,
@@ -10,6 +11,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Flame,
+  Snowflake,
 } from 'lucide-react'
 import type { ComponentProps } from 'react'
 import { useState } from 'react'
@@ -19,6 +21,7 @@ type Props = {
   history: DailyHistoryEntry[]
   activeStreak: number
   bestStreak: number
+  streakStatus: StreakStatus
 }
 
 function PlayedDayButton({
@@ -36,7 +39,18 @@ function PlayedDayButton({
   )
 }
 
-export function ProfileCalendar({ history, activeStreak, bestStreak }: Props) {
+const FLAME_CLASS: Record<StreakStatus, string> = {
+  active: 'text-orange-400',
+  at_risk: 'text-sky-400',
+  none: 'text-muted-foreground',
+}
+
+export function ProfileCalendar({
+  history,
+  activeStreak,
+  bestStreak,
+  streakStatus,
+}: Props) {
   const today = new Date()
   const [month, setMonth] = useState(today)
 
@@ -56,9 +70,11 @@ export function ProfileCalendar({ history, activeStreak, bestStreak }: Props) {
     year: 'numeric',
   })
 
+  const flameClass = FLAME_CLASS[streakStatus]
+
   return (
     <div className="bg-card border-border rounded-xl border p-4">
-      {/* ── Header: nav + month + streak ── */}
+      {/* ── Header: nav + month ── */}
       <div className="mb-2 flex items-center justify-between">
         <Button
           variant="ghost"
@@ -114,7 +130,11 @@ export function ProfileCalendar({ history, activeStreak, bestStreak }: Props) {
         {/* Stats column */}
         <div className="border-border flex flex-1 flex-col justify-center gap-5 border-l pl-3">
           <div className="flex items-center gap-2.5">
-            <Flame className="size-9 shrink-0 text-orange-400" />
+            {streakStatus === 'at_risk' ? (
+              <Snowflake className={`size-9 shrink-0 ${flameClass}`} />
+            ) : (
+              <Flame className={`size-9 shrink-0 ${flameClass}`} />
+            )}
             <div>
               <p className="text-lg leading-none font-bold tabular-nums">
                 {activeStreak}

@@ -1,6 +1,10 @@
 import { ProfileContent } from './_components/ProfileContent'
 import { getUserDailyHistory } from '@/lib/dal/game_results'
-import { computeActiveStreak, getProfileByUserId } from '@/lib/dal/profiles'
+import {
+  computeActiveStreak,
+  computeStreakStatus,
+  getProfileByUserId,
+} from '@/lib/dal/profiles'
 import { getUserRankedSessionHistory } from '@/lib/dal/ranked_sessions'
 import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
@@ -22,6 +26,7 @@ export default async function ProfilePage() {
   if (!profile) redirect('/auth')
 
   const activeStreak = computeActiveStreak(profile)
+  const streakStatus = computeStreakStatus(profile)
 
   return (
     <ProfileContent
@@ -29,6 +34,7 @@ export default async function ProfilePage() {
       history={history}
       rankedHistory={rankedHistory}
       activeStreak={activeStreak}
+      streakStatus={streakStatus}
       email={user.email}
     />
   )

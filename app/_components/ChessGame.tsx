@@ -10,6 +10,7 @@ import { AlreadyPlayedCard } from './AlreadyPlayedCard'
 import { PastDayCard } from './PastDayCard'
 import type { DayEntry } from './DailyCalendar'
 import { DailyCalendar } from './DailyCalendar'
+import type { StreakStatus } from '@/lib/dal/profiles'
 import { EloGuessForm } from './EloGuessForm'
 import { GameInfoCard } from './GameInfoCard'
 import { MoveNavigator } from './MoveNavigator'
@@ -40,6 +41,7 @@ type Props = {
   recentDays: DayEntry[]
   isLoggedIn: boolean
   streak: number
+  streakStatus: StreakStatus
   isToday: boolean
   selectedDate: string
   pastDayElo?: number | null
@@ -52,6 +54,7 @@ export function ChessGame({
   recentDays,
   isLoggedIn,
   streak,
+  streakStatus,
   isToday,
   selectedDate,
   pastDayElo,
@@ -119,6 +122,7 @@ export function ChessGame({
         <DailyCalendar
           days={recentDays}
           streak={streak}
+          streakStatus={streakStatus}
           isLoggedIn={isLoggedIn}
           selectedDate={selectedDate}
         />

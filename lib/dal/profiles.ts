@@ -1,7 +1,7 @@
 import 'server-only'
 
-import { createClient } from '@/utils/supabase/server'
 import type { Tables } from '@/lib/database.types'
+import { createClient } from '@/utils/supabase/server'
 
 export type Profile = Tables<'profiles'>
 
@@ -16,6 +16,16 @@ export function computeActiveStreak(profile: Profile | null): number {
   return profile.streak_last_played >= utcDateString(-1)
     ? profile.current_streak
     : 0
+}
+
+/** 'none' = no active streak, 'at_risk' = active but not played today, 'active' = played today */
+export type StreakStatus = 'none' | 'at_risk' | 'active'
+
+export function computeStreakStatus(profile: Profile | null): StreakStatus {
+  if (!profile || !profile.streak_last_played) return 'none'
+  if (profile.streak_last_played < utcDateString(-1)) return 'none'
+  if (profile.streak_last_played === utcDateString()) return 'active'
+  return 'at_risk'
 }
 
 export async function getProfiles(): Promise<Profile[]> {

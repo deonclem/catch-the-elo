@@ -10,7 +10,12 @@ import {
   getDailyGameByDate,
   getRecentDailyGames,
 } from '@/lib/dal/games'
-import { computeActiveStreak, getProfileByUserId } from '@/lib/dal/profiles'
+import {
+  computeActiveStreak,
+  computeStreakStatus,
+  getProfileByUserId,
+  type StreakStatus,
+} from '@/lib/dal/profiles'
 import { createClient } from '@/utils/supabase/server'
 import { cookies } from 'next/headers'
 import type { Metadata } from 'next'
@@ -90,6 +95,7 @@ export default async function Home({
   let scoreMap = new Map<string, number>()
   let existingResult = null
   let streak = 0
+  let streakStatus: StreakStatus = 'none'
 
   if (user) {
     const [profile, map] = await Promise.all([
@@ -104,6 +110,7 @@ export default async function Home({
       ? await getDailyGameResultForUser(user.id, targetGame.id)
       : null
     streak = computeActiveStreak(profile)
+    streakStatus = computeStreakStatus(profile)
   } else if (isToday) {
     const cookieStore = await cookies()
     const raw = cookieStore.get('dte_daily_result')?.value
@@ -145,6 +152,7 @@ export default async function Home({
           recentDays={recentDays}
           isLoggedIn={user !== null}
           streak={streak}
+          streakStatus={streakStatus}
           isToday={isToday}
           selectedDate={selectedDate}
           pastDayElo={!isToday ? (targetGame.target_elo ?? null) : undefined}

@@ -1,6 +1,10 @@
 import { Navbar } from '@/components/layout/Navbar'
 import Link from 'next/link'
-import { computeActiveStreak, getProfileByUserId } from '@/lib/dal/profiles'
+import {
+  computeActiveStreak,
+  computeStreakStatus,
+  getProfileByUserId,
+} from '@/lib/dal/profiles'
 import { createClient } from '@/utils/supabase/server'
 import { Analytics } from '@vercel/analytics/next'
 import { SpeedInsights } from '@vercel/speed-insights/next'
@@ -64,6 +68,7 @@ export default async function RootLayout({
 
   const profile = user ? await getProfileByUserId(user.id) : null
   const streak = computeActiveStreak(profile)
+  const streakStatus = computeStreakStatus(profile)
 
   return (
     <html lang="en" className={`${inter.variable} ${geistMono.variable}`}>
@@ -71,6 +76,7 @@ export default async function RootLayout({
         <Navbar
           isLoggedIn={user !== null}
           streak={streak}
+          streakStatus={streakStatus}
           avatarSlug={profile?.avatar_slug ?? null}
         />
         <div className="flex flex-1 flex-col pb-14 md:pt-16 md:pb-0">

@@ -3,7 +3,7 @@ import { UserAvatar } from '@/components/ui/UserAvatar'
 import { signOut } from '@/lib/actions/auth'
 import { RANKED_ROUNDS } from '@/lib/chess/scoring'
 import type { DailyHistoryEntry } from '@/lib/dal/game_results'
-import type { Profile } from '@/lib/dal/profiles'
+import type { Profile, StreakStatus } from '@/lib/dal/profiles'
 import type { RankedSessionHistoryEntry } from '@/lib/dal/ranked_sessions'
 import { Hash, Swords, Trophy } from 'lucide-react'
 import { AvatarPickerDialog } from './AvatarPickerDialog'
@@ -51,6 +51,7 @@ type Props = {
   history: DailyHistoryEntry[]
   rankedHistory: RankedSessionHistoryEntry[]
   activeStreak: number
+  streakStatus: StreakStatus
   /** Present only for the authenticated owner — triggers editable avatar, email display, and account section. */
   email?: string
 }
@@ -60,6 +61,7 @@ export function ProfileContent({
   history,
   rankedHistory,
   activeStreak,
+  streakStatus,
   email,
 }: Props) {
   const isOwner = email !== undefined
@@ -128,6 +130,7 @@ export function ProfileContent({
             history={history}
             activeStreak={activeStreak}
             bestStreak={profile.best_streak ?? 0}
+            streakStatus={streakStatus}
           />
         </Section>
 

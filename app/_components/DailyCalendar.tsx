@@ -1,6 +1,7 @@
-import { Flame } from 'lucide-react'
-import Link from 'next/link'
+import type { StreakStatus } from '@/lib/dal/profiles'
 import { cn } from '@/lib/utils'
+import { Flame, Snowflake } from 'lucide-react'
+import Link from 'next/link'
 
 export type DayEntry = {
   date: string // 'YYYY-MM-DD'
@@ -13,6 +14,7 @@ export type DayEntry = {
 type Props = {
   days: DayEntry[]
   streak: number
+  streakStatus: StreakStatus
   isLoggedIn: boolean
   selectedDate: string
 }
@@ -33,22 +35,53 @@ function formatDay(
   return { weekday, label }
 }
 
+const STREAK_CARD: Record<
+  StreakStatus,
+  { flameClass: string; cardClass: string; label: string } | null
+> = {
+  active: {
+    flameClass: 'text-primary',
+    cardClass: 'border-primary/20 bg-primary/8 text-primary',
+    label: 'Keep it up!',
+  },
+  at_risk: {
+    flameClass: 'text-sky-500',
+    cardClass: 'border-sky-500/30 bg-sky-500/8 text-sky-500',
+    label: 'Play today to keep it live!',
+  },
+  none: null,
+}
+
 export function DailyCalendar({
   days,
   streak,
+  streakStatus,
   isLoggedIn,
   selectedDate,
 }: Props) {
+  const streakCard = isLoggedIn && streak > 0 ? STREAK_CARD[streakStatus] : null
+
   return (
     <div className="flex flex-col gap-3">
-      {isLoggedIn && streak > 0 && (
-        <div className="border-primary/20 bg-primary/8 text-primary flex items-center gap-1.5 rounded-lg border px-3 py-2">
-          <Flame className="size-4 shrink-0" />
+      {streakCard && (
+        <div
+          className={cn(
+            'flex items-center gap-1.5 rounded-lg border px-3 py-2',
+            streakCard.cardClass
+          )}
+        >
+          {streakStatus === 'at_risk' ? (
+            <Snowflake
+              className={cn('size-4 shrink-0', streakCard.flameClass)}
+            />
+          ) : (
+            <Flame className={cn('size-4 shrink-0', streakCard.flameClass)} />
+          )}
           <div>
             <p className="text-xs leading-none font-semibold">
               {streak}-day streak
             </p>
-            <p className="text-primary/70 mt-0.5 text-[10px]">Keep it up!</p>
+            <p className="mt-0.5 text-[10px] opacity-70">{streakCard.label}</p>
           </div>
         </div>
       )}
@@ -60,7 +93,6 @@ export function DailyCalendar({
 
           const rowContent = (
             <>
-              {/* Completion dot */}
               <div
                 className={cn(
                   'size-2 shrink-0 rounded-full',
