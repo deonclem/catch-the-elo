@@ -66,10 +66,10 @@ export default function LegalPage() {
         <p className="text-muted-foreground text-sm leading-relaxed">
           Questions? Reach out at{' '}
           <a
-            href="mailto:hello@gueslo.app"
+            href="mailto:contact@gueslo.app"
             className="text-foreground underline underline-offset-4"
           >
-            hello@gueslo.app
+            contact@gueslo.app
           </a>
           .
         </p>
