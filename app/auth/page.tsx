@@ -1,13 +1,13 @@
+import { Separator } from '@/components/ui/separator'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import type { Metadata } from 'next'
+import { GoogleButton } from './_components/GoogleButton'
 import { SignInForm } from './_components/SignInForm'
+import { SignUpForm } from './_components/SignUpForm'
 
 export const metadata: Metadata = {
   title: 'Sign In',
 }
-import { SignUpForm } from './_components/SignUpForm'
-import { GoogleButton } from './_components/GoogleButton'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Separator } from '@/components/ui/separator'
 
 export default function AuthPage() {
   return (
@@ -26,7 +26,7 @@ export default function AuthPage() {
               Log In
             </TabsTrigger>
             <TabsTrigger value="signup" className="flex-1">
-              Sign Up
+              Create an account
             </TabsTrigger>
           </TabsList>
 

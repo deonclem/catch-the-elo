@@ -3,8 +3,9 @@ import { ProfileCalendar } from '@/app/profile/_components/ProfileCalendar'
 import { UserAvatar } from '@/components/ui/UserAvatar'
 import { getUserDailyHistory } from '@/lib/dal/game_results'
 import { computeActiveStreak, getProfileByUsername } from '@/lib/dal/profiles'
-import { getUserRankedSessionHistory } from '@/lib/dal/ranked_sessions'
-import { CalendarDays, Flame, Swords, Trophy } from 'lucide-react'
+import { RANKED_ROUNDS } from '@/lib/chess/scoring'
+import { getPublicUserRankedSessionHistory } from '@/lib/dal/ranked_sessions'
+import { Hash, Swords, Trophy } from 'lucide-react'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
@@ -59,11 +60,10 @@ export default async function PublicProfilePage({ params }: Props) {
 
   const [history, rankedHistory] = await Promise.all([
     getUserDailyHistory(profile.id),
-    getUserRankedSessionHistory(profile.id),
+    getPublicUserRankedSessionHistory(profile.id),
   ])
 
   const activeStreak = computeActiveStreak(profile)
-  const totalGames = history.length
 
   return (
     <main className="flex flex-1 flex-col items-center p-4 pt-8 pb-10">
@@ -87,7 +87,7 @@ export default async function PublicProfilePage({ params }: Props) {
 
         {/* ── 2. Ranked ── */}
         <Section title="Ranked">
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-3 gap-3">
             <StatCard
               icon={<Swords className="size-5" />}
               value={profile.rating ?? 1200}
@@ -97,6 +97,11 @@ export default async function PublicProfilePage({ params }: Props) {
               icon={<Trophy className="size-5" />}
               value={profile.highest_score?.toLocaleString() ?? '—'}
               label="Best score"
+            />
+            <StatCard
+              icon={<Hash className="size-5" />}
+              value={rankedHistory.length * RANKED_ROUNDS}
+              label="Rounds played"
             />
           </div>
           {rankedHistory.length > 0 && (
@@ -109,24 +114,11 @@ export default async function PublicProfilePage({ params }: Props) {
 
         {/* ── 3. Daily ── */}
         <Section title="Daily">
-          <div className="grid grid-cols-3 gap-3">
-            <StatCard
-              icon={<Flame className="size-5" />}
-              value={activeStreak}
-              label="Current streak"
-            />
-            <StatCard
-              icon={<Trophy className="size-5" />}
-              value={profile.best_streak ?? 0}
-              label="Best streak"
-            />
-            <StatCard
-              icon={<CalendarDays className="size-5" />}
-              value={totalGames}
-              label="Games played"
-            />
-          </div>
-          <ProfileCalendar history={history} />
+          <ProfileCalendar
+            history={history}
+            activeStreak={activeStreak}
+            bestStreak={profile.best_streak ?? 0}
+          />
         </Section>
       </div>
     </main>

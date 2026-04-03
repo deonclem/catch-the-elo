@@ -1,6 +1,6 @@
 'use server'
 
-import { upsertUsername } from '@/lib/dal/profiles'
+import { isUsernameTaken, upsertUsername } from '@/lib/dal/profiles'
 import { isUsernameAllowed } from '@/lib/username-filter'
 import {
   signInSchema,
@@ -39,6 +39,10 @@ export async function signUp(
 
   if (isUsernameAllowed(username)) {
     return { errors: { username: ['This username is not allowed'] } }
+  }
+
+  if (await isUsernameTaken(username)) {
+    return { errors: { username: ['Username is already taken'] } }
   }
 
   const supabase = await createClient()

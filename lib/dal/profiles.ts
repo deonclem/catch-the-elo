@@ -50,6 +50,16 @@ export async function getProfileByUsername(
   return data
 }
 
+export async function isUsernameTaken(username: string): Promise<boolean> {
+  const supabase = await createClient()
+  const { data } = await supabase
+    .from('profiles')
+    .select('id')
+    .eq('username', username)
+    .maybeSingle()
+  return data !== null
+}
+
 export async function upsertUsername(
   userId: string,
   username: string

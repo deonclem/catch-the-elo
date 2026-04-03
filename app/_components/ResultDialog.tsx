@@ -1,8 +1,5 @@
 'use client'
 
-import { useState } from 'react'
-import Image from 'next/image'
-import { Copy, Check, ExternalLink } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -10,11 +7,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { ScoreBar } from './ScoreBar'
 import {
   generateShareText,
   getResultIllustrationSrc,
 } from '@/lib/chess/scoring'
+import { Check, Copy, ExternalLink } from 'lucide-react'
+import Image from 'next/image'
+import { useMemo, useState } from 'react'
+import { ScoreBar } from './ScoreBar'
 
 type Props = {
   open: boolean
@@ -28,12 +28,116 @@ type Props = {
   nextLabel?: string
 }
 
+const SCORE_TIERS: [number, string[]][] = [
+  [
+    4900,
+    [
+      'Illegal move.',
+      'Please report to your nearest chess federation.',
+      'Inhuman.',
+      'We are investigating.',
+    ],
+  ],
+  [
+    4500,
+    [
+      'Almost too good.',
+      'Your opponents fear you.',
+      'Scary accurate.',
+      'Save some Elo for the rest of us.',
+    ],
+  ],
+  [
+    4000,
+    ['Suspiciously accurate.', 'Sharp eye!', 'Uncanny.', 'Elo whisperer.'],
+  ],
+  [
+    3500,
+    [
+      'Solid read.',
+      'Getting scary good.',
+      'Almost a GM.',
+      "You've done this before.",
+    ],
+  ],
+  [
+    3000,
+    [
+      'Above average.',
+      'Respectable.',
+      'Not bad at all.',
+      'Your inner GM is showing.',
+    ],
+  ],
+  [
+    2500,
+    [
+      'More than a guess.',
+      'Decent read.',
+      "You're onto something.",
+      'Not terrible.',
+    ],
+  ],
+  [
+    2000,
+    [
+      'Could be worse.',
+      'You were in the ballpark.',
+      'Passable.',
+      'Room to grow.',
+    ],
+  ],
+  [
+    1500,
+    [
+      'Chess is hard.',
+      'The pieces lied to you.',
+      'A bold guess.',
+      'The Elo eludes you.',
+    ],
+  ],
+  [
+    1000,
+    [
+      'Rough one.',
+      'Back to chess school.',
+      'Who hurt you?',
+      'The board is mocking you.',
+    ],
+  ],
+  [
+    500,
+    [
+      'Were you even looking?',
+      'Questionable.',
+      'Bold strategy.',
+      'A swing and a miss.',
+    ],
+  ],
+  [
+    100,
+    [
+      'A bold choice.',
+      'Even pawns are embarrassed.',
+      'Incredible commitment.',
+      'The Elo fights back.',
+    ],
+  ],
+  [
+    0,
+    [
+      'Historical.',
+      'A new low score has been set.',
+      'Did you guess your age?',
+      'You need a hug.',
+    ],
+  ],
+]
+
 function scoreLabel(score: number): string {
-  if (score >= 4500) return 'Perfect!'
-  if (score >= 3500) return 'Great!'
-  if (score >= 2000) return 'Good'
-  if (score >= 1000) return 'Getting there'
-  return 'Keep trying'
+  const tier = SCORE_TIERS.find(([threshold]) => score >= threshold)
+  const labels = tier ? tier[1] : SCORE_TIERS[SCORE_TIERS.length - 1][1]
+  return labels[Math.floor(Math.random() * labels.length)]
 }
 
 export function ResultDialog({
@@ -48,6 +152,7 @@ export function ResultDialog({
   nextLabel,
 }: Props) {
   const [copied, setCopied] = useState(false)
+  const label = useMemo(() => scoreLabel(score), [score])
 
   const handleCopy = () => {
     const text = generateShareText(
@@ -69,7 +174,7 @@ export function ResultDialog({
       <DialogContent className="max-w-sm">
         <DialogHeader>
           <DialogTitle className="text-muted-foreground text-center text-base font-medium">
-            {scoreLabel(score)}
+            {label}
           </DialogTitle>
         </DialogHeader>
 
@@ -77,7 +182,7 @@ export function ResultDialog({
           {/* Illustration */}
           <Image
             src={getResultIllustrationSrc(score)}
-            alt={scoreLabel(score)}
+            alt={label}
             width={180}
             height={180}
             className="rounded-xl"

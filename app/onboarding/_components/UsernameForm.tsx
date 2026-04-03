@@ -3,8 +3,10 @@
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useTransition } from 'react'
+import { RefreshCw } from 'lucide-react'
 import { setUsername, type AuthActionState } from '@/lib/actions/auth'
 import { usernameSchema, type UsernameValues } from '@/lib/validations/auth'
+import { generateUsername } from '@/lib/username-generator'
 import { Button } from '@/components/ui/button'
 import {
   Form,
@@ -16,12 +18,16 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 
-export function UsernameForm() {
+interface UsernameFormProps {
+  defaultUsername: string
+}
+
+export function UsernameForm({ defaultUsername }: UsernameFormProps) {
   const [isPending, startTransition] = useTransition()
 
   const form = useForm<UsernameValues>({
     resolver: zodResolver(usernameSchema),
-    defaultValues: { username: '' },
+    defaultValues: { username: defaultUsername },
   })
 
   function onSubmit(values: UsernameValues) {
@@ -51,12 +57,26 @@ export function UsernameForm() {
             <FormItem>
               <FormLabel>Username</FormLabel>
               <FormControl>
-                <Input
-                  placeholder="chess_wizard"
-                  autoComplete="username"
-                  {...field}
-                />
+                <div className="flex gap-2">
+                  <Input autoComplete="username" {...field} />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    aria-label="Suggest another username"
+                    onClick={() =>
+                      form.setValue('username', generateUsername(), {
+                        shouldValidate: true,
+                      })
+                    }
+                  >
+                    <RefreshCw className="h-4 w-4" />
+                  </Button>
+                </div>
               </FormControl>
+              <p className="text-muted-foreground text-xs">
+                Your username cannot be changed after this step.
+              </p>
               <FormMessage />
             </FormItem>
           )}

@@ -6,9 +6,10 @@ import { Button } from '@/components/ui/button'
 import { signOut } from '@/lib/actions/auth'
 import { getUserDailyHistory } from '@/lib/dal/game_results'
 import { computeActiveStreak, getProfileByUserId } from '@/lib/dal/profiles'
+import { RANKED_ROUNDS } from '@/lib/chess/scoring'
 import { getUserRankedSessionHistory } from '@/lib/dal/ranked_sessions'
 import { createClient } from '@/utils/supabase/server'
-import { CalendarDays, Flame, Swords, Trophy } from 'lucide-react'
+import { Hash, Swords, Trophy } from 'lucide-react'
 import { redirect } from 'next/navigation'
 
 function Section({
@@ -61,7 +62,6 @@ export default async function ProfilePage() {
   ])
 
   const activeStreak = computeActiveStreak(profile)
-  const totalGames = history.length
 
   return (
     <main className="flex flex-1 flex-col items-center p-4 pt-8 pb-10">
@@ -83,7 +83,7 @@ export default async function ProfilePage() {
 
         {/* ── 2. Ranked ── */}
         <Section title="Ranked">
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-3 gap-3">
             <StatCard
               icon={<Swords className="size-5" />}
               value={profile?.rating ?? 1200}
@@ -93,6 +93,11 @@ export default async function ProfilePage() {
               icon={<Trophy className="size-5" />}
               value={profile?.highest_score?.toLocaleString() ?? '—'}
               label="Best score"
+            />
+            <StatCard
+              icon={<Hash className="size-5" />}
+              value={rankedHistory.length * RANKED_ROUNDS}
+              label="Rounds played"
             />
           </div>
           {profile && (
@@ -105,24 +110,11 @@ export default async function ProfilePage() {
 
         {/* ── 3. Daily ── */}
         <Section title="Daily">
-          <div className="grid grid-cols-3 gap-3">
-            <StatCard
-              icon={<Flame className="size-5" />}
-              value={activeStreak}
-              label="Current Streak"
-            />
-            <StatCard
-              icon={<Trophy className="size-5" />}
-              value={profile?.best_streak ?? 0}
-              label="Best streak"
-            />
-            <StatCard
-              icon={<CalendarDays className="size-5" />}
-              value={totalGames}
-              label="Games played"
-            />
-          </div>
-          <ProfileCalendar history={history} />
+          <ProfileCalendar
+            history={history}
+            activeStreak={activeStreak}
+            bestStreak={profile?.best_streak ?? 0}
+          />
         </Section>
 
         {/* ── 4. Account ── */}
