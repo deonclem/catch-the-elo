@@ -6,71 +6,165 @@ export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
 
 export default function OgImage() {
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://gueslo.app'
+
   return new ImageResponse(
     <div
       style={{
-        background: '#09090b',
+        background: '#faf8ff',
         width: '100%',
         height: '100%',
         display: 'flex',
-        flexDirection: 'column',
         alignItems: 'center',
-        justifyContent: 'center',
-        gap: '24px',
+        padding: '60px 72px',
+        gap: '56px',
+        fontFamily: 'system-ui, sans-serif',
       }}
     >
+      {/* Left: branding */}
       <div
         style={{
           display: 'flex',
-          alignItems: 'center',
+          flexDirection: 'column',
+          flex: 1,
           gap: '20px',
         }}
       >
-        <span style={{ fontSize: '72px' }}>♟</span>
-        <span
-          style={{
-            fontSize: '72px',
-            fontWeight: 700,
-            color: '#ffffff',
-            letterSpacing: '-2px',
-          }}
-        >
-          Gueslo
-        </span>
-      </div>
-      <p
-        style={{
-          fontSize: '32px',
-          color: '#a1a1aa',
-          margin: 0,
-          letterSpacing: '-0.5px',
-        }}
-      >
-        Can you guess the Elo?
-      </p>
-      <div
-        style={{
-          display: 'flex',
-          gap: '12px',
-          marginTop: '8px',
-        }}
-      >
-        {['Daily Challenge', 'Ranked Mode', 'Leaderboards'].map((label) => (
+        {/* Logo + wordmark */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '18px' }}>
+          <img
+            src={`${baseUrl}/logo.png`}
+            alt=""
+            width={80}
+            height={80}
+            style={{ borderRadius: '18px' }}
+          />
           <span
-            key={label}
             style={{
-              fontSize: '20px',
-              color: '#52525b',
-              padding: '8px 20px',
-              border: '1px solid #27272a',
-              borderRadius: '9999px',
+              fontSize: '88px',
+              fontWeight: 800,
+              color: '#5b21b6',
+              letterSpacing: '-4px',
+              lineHeight: 1,
             }}
           >
-            {label}
+            Gueslo
           </span>
-        ))}
+        </div>
+
+        {/* Tagline */}
+        <p
+          style={{
+            fontSize: '40px',
+            fontWeight: 600,
+            color: '#18181b',
+            margin: 0,
+            letterSpacing: '-1px',
+          }}
+        >
+          Can you guess the Elo?
+        </p>
+
+        {/* Sub-tagline */}
+        <p
+          style={{
+            fontSize: '26px',
+            color: '#71717a',
+            margin: 0,
+            letterSpacing: '-0.3px',
+          }}
+        >
+          Daily challenge · Ranked mode
+        </p>
+      </div>
+
+      {/* Right: slider + board */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '64px', flexShrink: 0 }}>
+        {/* Vertical Elo slider — decorative */}
+        <div style={{ position: 'relative', width: 108, height: 368, display: 'flex' }}>
+          {/* Track background */}
+          <div
+            style={{
+              position: 'absolute',
+              right: 0,
+              top: 0,
+              width: 14,
+              height: 368,
+              background: '#ede9f6',
+              borderRadius: 7,
+            }}
+          />
+          {/* Fill (1250 ≈ 35% from bottom) */}
+          <div
+            style={{
+              position: 'absolute',
+              right: 0,
+              bottom: 0,
+              width: 14,
+              height: 130,
+              background: '#7261b3',
+              borderRadius: 7,
+            }}
+          />
+          {/* Thumb dot */}
+          <div
+            style={{
+              position: 'absolute',
+              right: -5,
+              bottom: 120,
+              width: 24,
+              height: 24,
+              background: '#5b21b6',
+              borderRadius: 12,
+              boxShadow: '0 0 0 3px white',
+            }}
+          />
+          {/* Connector line */}
+          <div
+            style={{
+              position: 'absolute',
+              right: 14,
+              bottom: 131,
+              width: 58,
+              height: 2,
+              background: '#5b21b6',
+              opacity: 0.5,
+            }}
+          />
+          {/* Badge */}
+          <div
+            style={{
+              position: 'absolute',
+              left: 0,
+              bottom: 110,
+              background: '#5b21b6',
+              color: 'white',
+              borderRadius: 10,
+              padding: '5px 10px',
+              fontSize: 19,
+              fontWeight: 700,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 5,
+            }}
+          >
+            1250 ?
+          </div>
+        </div>
+
+        {/* Board */}
+        <img
+          src={`${baseUrl}/example_board.png`}
+          alt=""
+          width={368}
+          height={368}
+          style={{
+            borderRadius: '14px',
+            boxShadow: '0 24px 64px rgba(91, 33, 182, 0.2)',
+          }}
+        />
       </div>
     </div>,
-    size
+    size,
   )
 }
