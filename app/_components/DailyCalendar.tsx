@@ -47,7 +47,7 @@ const STREAK_CARD: Record<
   at_risk: {
     flameClass: 'text-sky-500',
     cardClass: 'border-sky-500/30 bg-sky-500/8 text-sky-500',
-    label: 'Play today to keep it live!',
+    label: 'Play today to keep it alive!',
   },
   none: null,
 }
