@@ -25,7 +25,7 @@ export function EloGuessForm({ guess, onChange, onSubmit, disabled }: Props) {
           Your guess
         </p>
         <p className="text-primary text-5xl font-bold tabular-nums">
-          {isValid ? numericGuess.toLocaleString() : '–'}
+          {isValid ? numericGuess.toLocaleString() : '?'}
         </p>
       </div>
 
@@ -35,7 +35,7 @@ export function EloGuessForm({ guess, onChange, onSubmit, disabled }: Props) {
           min={MIN}
           max={MAX}
           step={25}
-          value={isValid ? guess : MIN}
+          value={isValid ? guess : Math.round((MIN + MAX) / 2)}
           onChange={(e) => onChange(e.target.value)}
           className="accent-primary w-full cursor-pointer"
           aria-label="Elo guess slider"

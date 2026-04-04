@@ -10,9 +10,6 @@ type Props = {
 export function RoundProgress({ currentRoundIndex, roundResults }: Props) {
   return (
     <div className="flex flex-col gap-2">
-      <p className="text-muted-foreground mb-1 text-xs font-medium tracking-wider uppercase">
-        Rounds
-      </p>
       {Array.from({ length: RANKED_ROUNDS }, (_, i) => {
         const result = roundResults.find((r) => r.roundNumber === i + 1)
         const isCurrent = i === currentRoundIndex && !result

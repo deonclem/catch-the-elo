@@ -14,8 +14,14 @@ export function useChessGame(
   onResult?: (guessElo: number, actualElo: number, score: number) => void
 ) {
   const [currentMoveIndex, setCurrentMoveIndex] = useState(0)
-  const [guess, setGuess] = useState('1500')
+  const [activeGameId, setActiveGameId] = useState(game.id)
+  const [guess, setGuess] = useState('')
   const [result, setResult] = useState<Result | null>(null)
+
+  if (game.id !== activeGameId) {
+    setActiveGameId(game.id)
+    setCurrentMoveIndex(0)
+  }
 
   const canGoBack = currentMoveIndex > 0
   const canGoForward = currentMoveIndex < game.positions.length - 1

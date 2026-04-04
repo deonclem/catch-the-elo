@@ -9,6 +9,7 @@ type Props = {
   canGoForward: boolean
   onBack: () => void
   onForward: () => void
+  compact?: boolean
 }
 
 export function MoveNavigator({
@@ -17,24 +18,29 @@ export function MoveNavigator({
   canGoForward,
   onBack,
   onForward,
+  compact = false,
 }: Props) {
   return (
-    <div className="flex items-center gap-4">
+    <div
+      className={`flex items-center ${compact ? 'w-full justify-between gap-2' : 'gap-4'}`}
+    >
       <Button
         variant="outline"
-        className="size-11"
+        className={compact ? 'size-9' : 'size-11'}
         onClick={onBack}
         disabled={!canGoBack}
         aria-label="Previous move"
       >
         <ChevronLeft />
       </Button>
-      <span className="text-muted-foreground min-w-[120px] text-center text-sm">
+      <span
+        className={`text-muted-foreground text-center text-sm ${compact ? 'min-w-[80px]' : 'min-w-[120px]'}`}
+      >
         {moveLabel}
       </span>
       <Button
         variant="outline"
-        className="size-11"
+        className={compact ? 'size-9' : 'size-11'}
         onClick={onForward}
         disabled={!canGoForward}
         aria-label="Next move"

@@ -1,18 +1,21 @@
 'use client'
 
-import { useState } from 'react'
-import type { ParsedGame } from '@/lib/chess/parser'
-import type { RankedSession } from '@/lib/dal/ranked_sessions'
+import { BoardColumn } from '@/app/_components/BoardColumn'
+import { EloGuessForm } from '@/app/_components/EloGuessForm'
+import { GuessCard } from '@/app/_components/GuessCard'
+import { ResultDialog } from '@/app/_components/ResultDialog'
+import { useChessGame } from '@/hooks/useChessGame'
 import type { RoundResult } from '@/lib/dal/game_results'
-import { submitRankedRound } from '@/lib/actions/ranked'
+import type { RankedSession } from '@/lib/dal/ranked_sessions'
+import type { ParsedGame } from '@/lib/chess/parser'
 import {
   calculateAverageElo,
   calculateScore,
   RANKED_ROUNDS,
 } from '@/lib/chess/scoring'
-import { EloGuessForm } from '@/app/_components/EloGuessForm'
-import { ResultDialog } from '@/app/_components/ResultDialog'
-import { RankedRound } from './RankedRound'
+import { submitRankedRound } from '@/lib/actions/ranked'
+import { Swords, Target } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { RoundProgress } from './RoundProgress'
 import { SessionCompleteCard } from './SessionCompleteCard'
 
@@ -37,17 +40,46 @@ export function RankedGame({ session, games, completedRounds }: Props) {
   const [roundResults, setRoundResults] =
     useState<RoundResult[]>(completedRounds)
   const [pendingResult, setPendingResult] = useState<PendingResult | null>(null)
-  const [guess, setGuess] = useState('1500')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
 
   const isSessionComplete = roundResults.length === RANKED_ROUNDS
-  const currentGame = games[currentRoundIndex]
+  const currentGame = games[Math.min(currentRoundIndex, games.length - 1)]!
   const isLastRound = currentRoundIndex + 1 === RANKED_ROUNDS
+
+  const {
+    guess,
+    setGuess,
+    canGoBack,
+    canGoForward,
+    goBack,
+    goForward,
+    currentFen,
+    moveLabel,
+    whiteClock,
+    blackClock,
+    isAtLastMove,
+  } = useChessGame(currentGame)
+
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if ((e.target as HTMLElement).tagName === 'INPUT') return
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault()
+        goBack()
+      }
+      if (e.key === 'ArrowRight') {
+        e.preventDefault()
+        goForward()
+      }
+    }
+    document.addEventListener('keydown', onKeyDown)
+    return () => document.removeEventListener('keydown', onKeyDown)
+  }, [goBack, goForward])
 
   async function handleSubmit(e: { preventDefault(): void }) {
     e.preventDefault()
-    if (!currentGame || isSubmitting) return
+    if (isSubmitting) return
     const actualElo = calculateAverageElo(
       currentGame.white.elo,
       currentGame.black.elo
@@ -88,7 +120,7 @@ export function RankedGame({ session, games, completedRounds }: Props) {
       },
     ])
     setPendingResult(null)
-    setGuess('1500')
+    setGuess('')
     if (!isLastRound) {
       setCurrentRoundIndex((i) => i + 1)
     }
@@ -109,23 +141,55 @@ export function RankedGame({ session, games, completedRounds }: Props) {
   }
 
   return (
-    <div className="flex flex-col items-center gap-6 lg:flex-row lg:items-start lg:justify-center lg:gap-14">
-      {/* Left column — round progress */}
-      <div className="w-full max-w-[280px] lg:w-[180px] lg:shrink-0">
-        <RoundProgress
-          currentRoundIndex={currentRoundIndex}
-          roundResults={roundResults}
-        />
+    <div className="flex flex-col items-center gap-6 lg:flex-row lg:items-start lg:justify-center lg:gap-10">
+      {/* Left column — rounds card (desktop only) */}
+      <div className="bg-card border-border hidden w-[220px] shrink-0 overflow-hidden rounded-xl border lg:block">
+        <div className="border-border bg-muted/30 flex items-center gap-2 border-b px-4 py-3">
+          <Swords className="text-muted-foreground size-4" />
+          <h2 className="text-sm font-semibold">Rounds</h2>
+        </div>
+        <div className="p-3">
+          <RoundProgress
+            currentRoundIndex={currentRoundIndex}
+            roundResults={roundResults}
+          />
+        </div>
       </div>
 
       {/* Middle column — board */}
-      {currentGame && (
-        <RankedRound key={currentRoundIndex} game={currentGame} />
-      )}
+      <BoardColumn
+        game={currentGame}
+        currentFen={currentFen}
+        whiteClock={whiteClock}
+        blackClock={blackClock}
+        isAtLastMove={isAtLastMove}
+        header={
+          <div className="text-center">
+            <h1 className="text-3xl font-bold tracking-tight md:text-4xl">
+              <span className="from-primary to-primary-end bg-gradient-to-r bg-clip-text text-transparent">
+                Ranked
+              </span>{' '}
+              Mode
+            </h1>
+            <p className="text-muted-foreground mt-1 text-sm">
+              Round {currentRoundIndex + 1} of {RANKED_ROUNDS}
+            </p>
+          </div>
+        }
+      />
 
-      {/* Right column — guess form */}
-      <div className="w-full max-w-[280px] shrink-0 lg:w-[220px]">
-        {!pendingResult && currentGame && (
+      {/* Right column — guess card */}
+      <GuessCard
+        Icon={Target}
+        iconClass="text-primary"
+        title="Make Your Guess"
+        moveLabel={moveLabel}
+        canGoBack={canGoBack}
+        canGoForward={canGoForward}
+        onBack={goBack}
+        onForward={goForward}
+      >
+        {!isSessionComplete && (
           <div className="flex flex-col gap-2">
             <EloGuessForm
               guess={guess}
@@ -140,9 +204,8 @@ export function RankedGame({ session, games, completedRounds }: Props) {
             )}
           </div>
         )}
-      </div>
+      </GuessCard>
 
-      {/* Result dialog */}
       {pendingResult && (
         <ResultDialog
           open={true}
@@ -151,9 +214,7 @@ export function RankedGame({ session, games, completedRounds }: Props) {
           actual={pendingResult.actualElo}
           score={pendingResult.score}
           lichessUrl={
-            currentGame?.id
-              ? `https://lichess.org/${currentGame.id}`
-              : undefined
+            currentGame.id ? `https://lichess.org/${currentGame.id}` : undefined
           }
           ratingChange={pendingResult.ratingChange}
           nextLabel={isLastRound ? 'See Results' : 'Next Round'}

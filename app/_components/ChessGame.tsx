@@ -3,30 +3,18 @@
 import { useChessGame } from '@/hooks/useChessGame'
 import { submitDailyResult } from '@/lib/actions/games'
 import type { ParsedGame } from '@/lib/chess/parser'
-import dynamic from 'next/dynamic'
+import type { StreakStatus } from '@/lib/dal/profiles'
+import { CalendarDays, CheckCircle2, History, Target } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { AlreadyPlayedCard } from './AlreadyPlayedCard'
-import { PastDayCard } from './PastDayCard'
+import { BoardColumn } from './BoardColumn'
 import type { DayEntry } from './DailyCalendar'
 import { DailyCalendar } from './DailyCalendar'
-import type { StreakStatus } from '@/lib/dal/profiles'
 import { EloGuessForm } from './EloGuessForm'
-import { GameInfoCard } from './GameInfoCard'
-import { MoveNavigator } from './MoveNavigator'
-import { PlayerClock, playerOutcome } from './PlayerClock'
+import { GuessCard } from './GuessCard'
+import { PastDayCard } from './PastDayCard'
 import { ResultDialog } from './ResultDialog'
-
-const ChessBoardClient = dynamic(
-  () =>
-    import('./ChessBoardClient').then((m) => ({ default: m.ChessBoardClient })),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="bg-muted aspect-square w-[85vw] max-w-[504px] animate-pulse rounded-xl" />
-    ),
-  }
-)
 
 type ExistingResult = {
   guessElo: number
@@ -115,66 +103,70 @@ export function ChessGame({
 
   const shownResult = existingResult ?? submittedResult
 
+  const cardMeta = shownResult
+    ? { Icon: CheckCircle2, title: 'Your Result', iconClass: 'text-primary' }
+    : isToday
+      ? { Icon: Target, title: 'Make Your Guess', iconClass: 'text-primary' }
+      : {
+          Icon: History,
+          title: 'Past Game',
+          iconClass: 'text-muted-foreground',
+        }
+
   return (
-    <div className="flex flex-col items-center gap-6 lg:flex-row lg:items-start lg:justify-center lg:gap-14">
-      {/* Left column — calendar (desktop only) */}
-      <div className="hidden w-[220px] shrink-0 lg:block">
-        <DailyCalendar
-          days={recentDays}
-          streak={streak}
-          streakStatus={streakStatus}
-          isLoggedIn={isLoggedIn}
-          selectedDate={selectedDate}
-        />
+    <div className="flex flex-col items-center gap-6 lg:flex-row lg:items-start lg:justify-center lg:gap-10">
+      {/* Left column — history card (desktop only) */}
+      <div className="bg-card border-border hidden w-[220px] shrink-0 overflow-hidden rounded-xl border lg:block">
+        <div className="border-border bg-muted/30 flex items-center gap-2 border-b px-4 py-3">
+          <CalendarDays className="text-muted-foreground size-4" />
+          <h2 className="text-sm font-semibold">This Week</h2>
+        </div>
+        <div className="p-3">
+          <DailyCalendar
+            days={recentDays}
+            streak={streak}
+            streakStatus={streakStatus}
+            isLoggedIn={isLoggedIn}
+            selectedDate={selectedDate}
+          />
+        </div>
       </div>
 
       {/* Middle column — board */}
-      <div className="flex w-[85vw] max-w-[504px] shrink-0 flex-col items-center gap-4">
-        <div className="text-center">
-          <h1 className="text-3xl font-bold tracking-tight md:text-4xl">
-            <span className="from-primary to-primary-end bg-gradient-to-r bg-clip-text text-transparent">
-              Daily
-            </span>{' '}
-            Challenge
-          </h1>
-          <p className="text-muted-foreground mt-1 text-sm">
-            {isToday
-              ? "Guess the average Elo of today's game"
-              : `Viewing ${new Date(selectedDate + 'T00:00:00Z').toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric', timeZone: 'UTC' })}`}
-          </p>
-        </div>
-        <GameInfoCard timeControl={game.timeControl} />
-        <PlayerClock
-          color="black"
-          clock={blackClock}
-          outcome={
-            isAtLastMove ? playerOutcome('black', game.result) : undefined
-          }
-          fen={currentFen}
-        />
-        <ChessBoardClient fen={currentFen} />
-        <PlayerClock
-          color="white"
-          clock={whiteClock}
-          outcome={
-            isAtLastMove ? playerOutcome('white', game.result) : undefined
-          }
-          fen={currentFen}
-        />
-        <MoveNavigator
-          moveLabel={moveLabel}
-          canGoBack={canGoBack}
-          canGoForward={canGoForward}
-          onBack={goBack}
-          onForward={goForward}
-        />
-        <p className="text-muted-foreground text-xs">
-          Use ← → arrow keys to navigate
-        </p>
-      </div>
+      <BoardColumn
+        game={game}
+        currentFen={currentFen}
+        whiteClock={whiteClock}
+        blackClock={blackClock}
+        isAtLastMove={isAtLastMove}
+        header={
+          <div className="text-center">
+            <h1 className="text-3xl font-bold tracking-tight md:text-4xl">
+              <span className="from-primary to-primary-end bg-gradient-to-r bg-clip-text text-transparent">
+                Daily
+              </span>{' '}
+              Challenge
+            </h1>
+            <p className="text-muted-foreground mt-1 text-sm">
+              {isToday
+                ? "Guess the average Elo of today's game"
+                : `Viewing ${new Date(selectedDate + 'T00:00:00Z').toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric', timeZone: 'UTC' })}`}
+            </p>
+          </div>
+        }
+      />
 
-      {/* Right column — guess form or result */}
-      <div className="w-full max-w-[280px] shrink-0 lg:w-[220px]">
+      {/* Right column — guess card */}
+      <GuessCard
+        Icon={cardMeta.Icon}
+        iconClass={cardMeta.iconClass}
+        title={cardMeta.title}
+        moveLabel={moveLabel}
+        canGoBack={canGoBack}
+        canGoForward={canGoForward}
+        onBack={goBack}
+        onForward={goForward}
+      >
         {shownResult ? (
           <AlreadyPlayedCard
             {...shownResult}
@@ -192,7 +184,7 @@ export function ChessGame({
         ) : pastDayElo != null ? (
           <PastDayCard key={selectedDate} actualElo={pastDayElo} />
         ) : null}
-      </div>
+      </GuessCard>
 
       {result !== null && !suppressResultDialog && (
         <ResultDialog
