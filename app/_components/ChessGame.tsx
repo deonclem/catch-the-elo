@@ -195,6 +195,7 @@ export function ChessGame({
           score={result.score}
           date={selectedDate}
           lichessUrl={game.id ? `https://lichess.org/${game.id}` : undefined}
+          isLoggedIn={isLoggedIn}
         />
       )}
     </div>

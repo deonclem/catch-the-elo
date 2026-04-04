@@ -11,8 +11,9 @@ import {
   generateShareText,
   getResultIllustrationSrc,
 } from '@/lib/chess/scoring'
-import { Check, Copy, ExternalLink } from 'lucide-react'
+import { Check, Copy, ExternalLink, Flame, Swords, Trophy } from 'lucide-react'
 import Image from 'next/image'
+import Link from 'next/link'
 import { useMemo, useState } from 'react'
 import { ScoreBar } from './ScoreBar'
 
@@ -26,6 +27,7 @@ type Props = {
   lichessUrl?: string
   ratingChange?: number
   nextLabel?: string
+  isLoggedIn?: boolean
 }
 
 const SCORE_TIERS: [number, string[]][] = [
@@ -34,8 +36,8 @@ const SCORE_TIERS: [number, string[]][] = [
     [
       'Illegal move.',
       'Please report to your nearest chess federation.',
-      'Inhuman.',
-      'We are investigating.',
+      'Inhuman!',
+      "Suspicious, we're investigating.",
     ],
   ],
   [
@@ -44,7 +46,7 @@ const SCORE_TIERS: [number, string[]][] = [
       'Almost too good.',
       'Your opponents fear you.',
       'Scary accurate.',
-      'Save some Elo for the rest of us.',
+      'Save some Elo for the rest of us!',
     ],
   ],
   [
@@ -150,6 +152,7 @@ export function ResultDialog({
   lichessUrl,
   ratingChange,
   nextLabel,
+  isLoggedIn = true,
 }: Props) {
   const [copied, setCopied] = useState(false)
   const label = useMemo(() => scoreLabel(score), [score])
@@ -227,6 +230,32 @@ export function ResultDialog({
               </div>
             )}
           </div>
+
+          {/* Sign-up nudge for anonymous users */}
+          {!isLoggedIn && (
+            <div className="border-border bg-muted/30 w-full rounded-lg border p-3">
+              <p className="text-foreground mb-2 text-sm font-semibold">
+                Save your results
+              </p>
+              <ul className="text-muted-foreground mb-3 space-y-1 text-xs">
+                <li className="flex items-center gap-2">
+                  <Flame className="text-primary size-3.5 shrink-0" />
+                  Track your daily streak
+                </li>
+                <li className="flex items-center gap-2">
+                  <Trophy className="text-primary size-3.5 shrink-0" />
+                  Appear on the leaderboard
+                </li>
+                <li className="flex items-center gap-2">
+                  <Swords className="text-primary size-3.5 shrink-0" />
+                  Play ranked mode
+                </li>
+              </ul>
+              <Button asChild className="w-full" size="sm">
+                <Link href="/auth?tab=signup">Create a free account →</Link>
+              </Button>
+            </div>
+          )}
 
           {/* Actions */}
           <div className="flex w-full flex-col gap-2">

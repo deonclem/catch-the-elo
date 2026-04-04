@@ -1,6 +1,6 @@
-import { NextResponse } from 'next/server'
-// The client you created from the Server-Side Auth instructions
+import { savePendingDailyResult } from '@/lib/helpers/pending-daily-result'
 import { createClient } from '@/utils/supabase/server'
+import { NextResponse } from 'next/server'
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
@@ -16,6 +16,8 @@ export async function GET(request: Request) {
     const supabase = await createClient()
     const { error } = await supabase.auth.exchangeCodeForSession(code)
     if (!error) {
+      await savePendingDailyResult()
+
       const forwardedHost = request.headers.get('x-forwarded-host') // original origin before load balancer
       const isLocalEnv = process.env.NODE_ENV === 'development'
       if (isLocalEnv) {

@@ -1,6 +1,7 @@
 'use server'
 
 import { isUsernameTaken, upsertUsername } from '@/lib/dal/profiles'
+import { savePendingDailyResult } from '@/lib/helpers/pending-daily-result'
 import { isUsernameAllowed } from '@/lib/username-filter'
 import {
   signInSchema,
@@ -75,6 +76,7 @@ export async function signUp(
     return { errors: { username: ['Username is already taken'] } }
   }
 
+  await savePendingDailyResult()
   redirect('/')
 }
 

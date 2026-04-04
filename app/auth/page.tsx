@@ -1,6 +1,7 @@
 import { Separator } from '@/components/ui/separator'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import type { Metadata } from 'next'
+import Image from 'next/image'
 import { GoogleButton } from './_components/GoogleButton'
 import { SignInForm } from './_components/SignInForm'
 import { SignUpForm } from './_components/SignUpForm'
@@ -9,18 +10,36 @@ export const metadata: Metadata = {
   title: 'Sign In',
 }
 
-export default function AuthPage() {
+export default async function AuthPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ tab?: string }>
+}) {
+  const { tab } = await searchParams
+  const defaultTab = tab === 'signup' ? 'signup' : 'login'
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-4">
+    <main className="flex flex-1 flex-col items-center justify-center p-4">
       <div className="w-full max-w-sm space-y-6">
-        <div className="space-y-1 text-center">
-          <h1 className="text-2xl font-bold tracking-tight">Gueslo</h1>
+        <div className="flex flex-col items-center gap-3">
+          <div className="flex items-center gap-2.5">
+            <Image
+              src="/logo.svg"
+              alt="Gueslo"
+              width={36}
+              height={36}
+              className="rounded-sm"
+            />
+            <span className="from-primary to-primary-end bg-gradient-to-r bg-clip-text text-3xl font-bold tracking-tight text-transparent">
+              Gueslo
+            </span>
+          </div>
           <p className="text-muted-foreground text-sm">
-            Log in to track your ranking
+            Log in to play ranked mode and track your scores!
           </p>
         </div>
 
-        <Tabs defaultValue="login">
+        <Tabs defaultValue={defaultTab}>
           <TabsList className="w-full">
             <TabsTrigger value="login" className="flex-1">
               Log In
