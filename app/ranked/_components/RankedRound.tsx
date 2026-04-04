@@ -61,12 +61,14 @@ export function RankedRound({ game }: Props) {
         color="black"
         clock={blackClock}
         outcome={isAtLastMove ? playerOutcome('black', game.result) : undefined}
+        fen={currentFen}
       />
       <ChessBoardClient fen={currentFen} />
       <PlayerClock
         color="white"
         clock={whiteClock}
         outcome={isAtLastMove ? playerOutcome('white', game.result) : undefined}
+        fen={currentFen}
       />
       <MoveNavigator
         moveLabel={moveLabel}

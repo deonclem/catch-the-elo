@@ -150,6 +150,7 @@ export function ChessGame({
           outcome={
             isAtLastMove ? playerOutcome('black', game.result) : undefined
           }
+          fen={currentFen}
         />
         <ChessBoardClient fen={currentFen} />
         <PlayerClock
@@ -158,6 +159,7 @@ export function ChessGame({
           outcome={
             isAtLastMove ? playerOutcome('white', game.result) : undefined
           }
+          fen={currentFen}
         />
         <MoveNavigator
           moveLabel={moveLabel}

@@ -1,6 +1,7 @@
 import type { GameResult } from '@/lib/chess/parser'
 import { cn } from '@/lib/utils'
 import { Crown, Equal, Flag, Swords, Timer } from 'lucide-react'
+import { MaterialDisplay } from './MaterialDisplay'
 
 type Outcome =
   | 'won'
@@ -57,31 +58,35 @@ type Props = {
   color: 'white' | 'black'
   clock?: string | null
   outcome?: Outcome
+  fen?: string
 }
 
-export function PlayerClock({ color, clock, outcome }: Props) {
-  if (!clock && !outcome) return null
+export function PlayerClock({ color, clock, outcome, fen }: Props) {
+  if (!clock && !outcome && !fen) return null
 
   return (
-    <div className="flex w-full items-center justify-between px-1">
-      <div className="flex items-center gap-1.5">
-        <span className="text-muted-foreground text-xs font-medium capitalize">
-          {color}
-        </span>
-        {outcome && <OutcomeIcon outcome={outcome} />}
+    <div className="flex w-full flex-col gap-0.5 px-1">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-1.5">
+          <span className="text-muted-foreground text-xs font-medium capitalize">
+            {color}
+          </span>
+          {outcome && <OutcomeIcon outcome={outcome} />}
+          {fen && <MaterialDisplay color={color} fen={fen} />}
+        </div>
+        {clock && (
+          <span
+            className={cn(
+              'rounded-md border px-2 py-0.5 font-mono text-sm font-semibold tabular-nums',
+              color === 'white'
+                ? 'border-border bg-card text-foreground'
+                : 'border-primary/20 bg-primary/10 text-primary'
+            )}
+          >
+            {clock}
+          </span>
+        )}
       </div>
-      {clock && (
-        <span
-          className={cn(
-            'rounded-md border px-2 py-0.5 font-mono text-sm font-semibold tabular-nums',
-            color === 'white'
-              ? 'border-border bg-card text-foreground'
-              : 'border-primary/20 bg-primary/10 text-primary'
-          )}
-        >
-          {clock}
-        </span>
-      )}
     </div>
   )
 }

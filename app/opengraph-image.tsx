@@ -79,9 +79,23 @@ export default function OgImage() {
       </div>
 
       {/* Right: slider + board */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '64px', flexShrink: 0 }}>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '64px',
+          flexShrink: 0,
+        }}
+      >
         {/* Vertical Elo slider — decorative */}
-        <div style={{ position: 'relative', width: 108, height: 368, display: 'flex' }}>
+        <div
+          style={{
+            position: 'relative',
+            width: 108,
+            height: 368,
+            display: 'flex',
+          }}
+        >
           {/* Track background */}
           <div
             style={{
@@ -165,6 +179,6 @@ export default function OgImage() {
         />
       </div>
     </div>,
-    size,
+    size
   )
 }

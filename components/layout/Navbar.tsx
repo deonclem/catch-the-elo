@@ -48,7 +48,13 @@ export function Navbar({
       <header className="border-border/60 bg-background/80 fixed inset-x-0 top-0 z-50 hidden h-16 items-center border-b px-6 backdrop-blur-md md:flex">
         <div className="grid w-full grid-cols-3 items-center">
           <Link href="/" className="flex items-center gap-2">
-            <Image src="/logo.svg" alt="Gueslo" width={28} height={28} className="rounded-sm" />
+            <Image
+              src="/logo.svg"
+              alt="Gueslo"
+              width={28}
+              height={28}
+              className="rounded-sm"
+            />
             <span className="from-primary to-primary-end bg-gradient-to-r bg-clip-text text-lg font-bold tracking-tight text-transparent">
               Gueslo
             </span>
