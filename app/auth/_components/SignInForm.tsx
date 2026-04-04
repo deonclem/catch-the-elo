@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 
-export function SignInForm() {
+export function SignInForm({ next }: { next?: string }) {
   const [isPending, startTransition] = useTransition()
 
   const form = useForm<SignInValues>({
@@ -26,7 +26,11 @@ export function SignInForm() {
 
   function onSubmit(values: SignInValues) {
     startTransition(async () => {
-      const result: AuthActionState = await signIn(undefined as never, values)
+      const result: AuthActionState = await signIn(
+        undefined as never,
+        values,
+        next
+      )
       if (result?.errors) {
         if (result.errors.email) {
           form.setError('email', { message: result.errors.email[0] })

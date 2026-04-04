@@ -4,12 +4,12 @@ import { Button } from '@/components/ui/button'
 import { signInWithGoogle } from '@/lib/actions/auth'
 import { useTransition } from 'react'
 
-export function GoogleButton() {
+export function GoogleButton({ next }: { next?: string }) {
   const [isPending, startTransition] = useTransition()
 
   function handleClick() {
     startTransition(async () => {
-      await signInWithGoogle()
+      await signInWithGoogle(next)
     })
   }
 

@@ -13,10 +13,11 @@ export const metadata: Metadata = {
 export default async function AuthPage({
   searchParams,
 }: {
-  searchParams: Promise<{ tab?: string }>
+  searchParams: Promise<{ tab?: string; next?: string }>
 }) {
-  const { tab } = await searchParams
+  const { tab, next } = await searchParams
   const defaultTab = tab === 'signup' ? 'signup' : 'login'
+  const safeNext = next?.startsWith('/') ? next : undefined
 
   return (
     <main className="flex flex-1 flex-col items-center justify-center p-4">
@@ -50,11 +51,11 @@ export default async function AuthPage({
           </TabsList>
 
           <TabsContent value="login" className="pt-4">
-            <SignInForm />
+            <SignInForm next={safeNext} />
           </TabsContent>
 
           <TabsContent value="signup" className="pt-4">
-            <SignUpForm />
+            <SignUpForm next={safeNext} />
           </TabsContent>
         </Tabs>
 
@@ -66,7 +67,7 @@ export default async function AuthPage({
             </span>
           </div>
 
-          <GoogleButton />
+          <GoogleButton next={safeNext} />
         </div>
       </div>
     </main>

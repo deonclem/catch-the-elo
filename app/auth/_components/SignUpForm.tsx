@@ -51,7 +51,7 @@ function PasswordStrengthHints({ password }: { password: string }) {
   )
 }
 
-export function SignUpForm() {
+export function SignUpForm({ next }: { next?: string }) {
   const [isPending, startTransition] = useTransition()
 
   const form = useForm<SignUpValues>({
@@ -63,7 +63,11 @@ export function SignUpForm() {
 
   function onSubmit(values: SignUpValues) {
     startTransition(async () => {
-      const result: AuthActionState = await signUp(undefined as never, values)
+      const result: AuthActionState = await signUp(
+        undefined as never,
+        values,
+        next
+      )
       if (result?.errors) {
         if (result.errors.email) {
           form.setError('email', { message: result.errors.email[0] })

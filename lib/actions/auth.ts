@@ -27,9 +27,14 @@ export type AuthActionState = {
 
 // ─── Actions ─────────────────────────────────────────────────────────────────
 
+function safeNext(next: string | undefined): string {
+  return next?.startsWith('/') ? next : '/'
+}
+
 export async function signUp(
   _prevState: AuthActionState,
-  data: SignUpValues
+  data: SignUpValues,
+  next?: string
 ): Promise<AuthActionState> {
   const parsed = signUpSchema.safeParse(data)
   if (!parsed.success) {
@@ -77,12 +82,13 @@ export async function signUp(
   }
 
   await savePendingDailyResult()
-  redirect('/')
+  redirect(safeNext(next))
 }
 
 export async function signIn(
   _prevState: AuthActionState,
-  data: SignInValues
+  data: SignInValues,
+  next?: string
 ): Promise<AuthActionState> {
   const parsed = signInSchema.safeParse(data)
   if (!parsed.success) {
@@ -105,15 +111,19 @@ export async function signIn(
     return { errors: { _form: [error.message] } }
   }
 
-  redirect('/')
+  redirect(safeNext(next))
 }
 
-export async function signInWithGoogle(): Promise<never> {
+export async function signInWithGoogle(next?: string): Promise<never> {
   const supabase = await createClient()
+  const callbackUrl = new URL(
+    `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`
+  )
+  if (next?.startsWith('/')) callbackUrl.searchParams.set('next', next)
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
-      redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`,
+      redirectTo: callbackUrl.toString(),
     },
   })
 

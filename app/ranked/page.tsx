@@ -23,7 +23,7 @@ export default async function RankedPage() {
     data: { user },
   } = await supabase.auth.getUser()
 
-  if (!user) redirect('/auth')
+  if (!user) redirect('/auth?next=/ranked')
 
   const [profile, activeSession] = await Promise.all([
     getProfileByUserId(user.id),

@@ -15,7 +15,7 @@ export default async function ProfilePage() {
     data: { user },
   } = await supabase.auth.getUser()
 
-  if (!user) redirect('/auth')
+  if (!user) redirect('/auth?next=/profile')
 
   const [profile, history, rankedHistory] = await Promise.all([
     getProfileByUserId(user.id),
@@ -23,7 +23,7 @@ export default async function ProfilePage() {
     getUserRankedSessionHistory(user.id),
   ])
 
-  if (!profile) redirect('/auth')
+  if (!profile) redirect('/auth?next=/profile')
 
   const activeStreak = computeActiveStreak(profile)
   const streakStatus = computeStreakStatus(profile)
