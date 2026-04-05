@@ -1,5 +1,3 @@
-import type { DayEntry } from './_components/DailyCalendar'
-import { ChessGame } from './_components/ChessGame'
 import { parseDailyGame } from '@/lib/chess/parser'
 import {
   getDailyGameResultForUser,
@@ -17,15 +15,17 @@ import {
   type StreakStatus,
 } from '@/lib/dal/profiles'
 import { createClient } from '@/utils/supabase/server'
-import { cookies } from 'next/headers'
 import type { Metadata } from 'next'
+import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { z } from 'zod'
+import { ChessGame } from './_components/ChessGame'
+import type { DayEntry } from './_components/DailyCalendar'
 
 export const metadata: Metadata = {
-  title: 'Daily Challenge',
+  title: 'Gueslo | Ranked Guess The Elo',
   description:
-    "Guess today's chess game Elo. A new game every day — no account needed.",
+    "Chess Eloguessr. Play Daily Games & Ranked Mode.",
   alternates: { canonical: 'https://gueslo.app' },
 }
 
@@ -34,7 +34,7 @@ const jsonLd = {
   '@type': 'WebApplication',
   name: 'Gueslo',
   description:
-    'Guess the Elo rating of a chess game. Daily challenge and ranked mode.',
+    'Chess Eloguessr. Play Daily Games & Ranked Mode.',
   url: 'https://gueslo.app',
   applicationCategory: 'Game',
   genre: 'Chess',

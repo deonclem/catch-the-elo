@@ -81,7 +81,7 @@ export async function signUp(
     return { errors: { username: ['Username is already taken'] } }
   }
 
-  await savePendingDailyResult()
+  await savePendingDailyResult(user.id)
   redirect(safeNext(next))
 }
 

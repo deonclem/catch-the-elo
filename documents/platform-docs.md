@@ -34,6 +34,7 @@ Players are shown a real chess game with player names and ratings hidden. They n
 - **Player names and Elos are hidden** during play — revealed only in the result modal after submission
 - Same game for all players worldwide, synchronized to midnight UTC
 - Anonymous users can play; only logged-in users have results saved
+- **Anonymous → account conversion**: after submission, the result dialog shows a sign-up nudge (streak, leaderboard, ranked mode). Clicking "Create a free account" deep-links to `/auth?tab=signup`. On sign-up, the pending result is automatically claimed (see `lib/helpers/pending-daily-result.ts`)
 
 ### Already-played state
 
@@ -77,20 +78,36 @@ https://gueslo.app
 1. Email + password + username → Server Action validates with Zod
 2. `supabase.auth.signUp()` → creates auth user
 3. Username written to `profiles` table immediately
-4. Password rules: ≥8 chars, ≥1 uppercase, ≥1 digit
-5. Username rules: 3–20 chars, alphanumeric + underscores
-6. Profanity filter applied via `leo-profanity` (English + French word lists) + reserved names list (`lib/username-filter.ts`)
+4. `savePendingDailyResult(user.id)` called — claims any anonymous daily result cookie
+5. Redirects to `next` param (if present and relative) or `/`
+6. Password rules: ≥8 chars, ≥1 uppercase, ≥1 digit
+7. Username rules: 3–20 chars, alphanumeric + underscores
+8. Profanity filter applied via `leo-profanity` (English + French word lists) + reserved names list (`lib/username-filter.ts`)
 
 ### Email/password log in
 
 - Standard `signInWithPassword()`; generic "Incorrect email or password" on failure
+- Redirects to `next` param (if present and relative) or `/`
 
 ### Google OAuth
 
 - `signInWithGoogle` server action calls `supabase.auth.signInWithOAuth()` → redirects to Google consent screen
-- Callback at `/auth/callback` exchanges the code for a session
+- **Post-login redirect**: if a `next` param is provided, it is stored in a short-lived `auth_next` cookie (10 min, sameSite lax) — **not** appended to `redirectTo`, because Supabase allowlist matching breaks with query params
+- Callback at `/auth/callback` reads + deletes the `auth_next` cookie, then redirects accordingly
+- Callback also calls `savePendingDailyResult(user.id)` to claim any anonymous result
 - New Google users have `username = null` → middleware redirects to `/onboarding` → user picks username → redirected to `/`
 - Requires `NEXT_PUBLIC_SITE_URL` env var (e.g. `http://localhost:3000` for dev, production URL on Vercel)
+
+### Anonymous result claiming (`lib/helpers/pending-daily-result.ts`)
+
+When an anonymous user plays the daily game, the result is stored in a `dte_daily_result` cookie (48h, SameSite=Strict) as `{ gameId, guessElo, actualElo, score }`.
+
+On sign-up or OAuth callback, `savePendingDailyResult(userId)` is called with the user ID **directly** (not via `getUser()` — session cookies may not be visible within the same Server Action that just created them). It:
+1. Reads + validates the cookie
+2. Verifies the `gameId` matches today's `daily_schedule`
+3. Skips if a result already exists (idempotent)
+4. Inserts the `game_results` row + updates streak
+5. Deletes the cookie
 
 ### Onboarding (`/onboarding`)
 
