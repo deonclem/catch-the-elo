@@ -222,5 +222,6 @@ change    = round(32 × (actual - expected))
 
 - `chess.js` parses PGN with `loadPgn()` (handles inline `{...}` comments from clock/eval data)
 - `react-chessboard` v5: board config goes in `options` prop, sizing via `boardStyle: { width, height }`
+- **Analytics**: PostHog tracks key client events (`daily_guess_submitted`, `daily_result_shared`, `ranked_session_started`, `ranked_round_submitted`, `ranked_session_completed`, `signup_nudge_clicked`, `ranked_nudge_clicked`, `avatar_picker_opened`, `avatar_changed`) and server-side auth events (`user_signed_up`, `user_signed_in`) with identity linking. Proxied through `/ingest` in `next.config.ts` to bypass ad-blockers. Server-side client lives in `lib/posthog-server.ts`.
 - No player names/Elos are ever exposed to the client during gameplay — only `white_elo`/`black_elo` computed server-side for scoring
 - `submitDailyResult` Server Action is idempotent: silently no-ops if result already exists or user is not authenticated

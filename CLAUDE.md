@@ -17,6 +17,7 @@ A competitive chess web application where players guess the average Elo rating o
 - **Language**: TypeScript
 - **Styling**: Tailwind CSS + shadcn/ui
 - **Backend/Auth**: Supabase
+- **Analytics**: PostHog (client + server-side, proxied via `/ingest`)
 - **Icons**: Lucide React
 
 ## 📏 Development Principles
