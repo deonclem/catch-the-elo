@@ -146,7 +146,7 @@ export default async function Home({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <main className="flex flex-1 flex-col items-center justify-center p-12">
+      <main className="flex flex-1 flex-col items-center justify-center px-0 py-4 md:p-12">
         <ChessGame
           game={parsedGame}
           dailyGameId={isToday ? targetGame.id : undefined}

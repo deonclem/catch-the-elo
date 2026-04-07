@@ -100,8 +100,9 @@ export function ProfileCalendar({
         </Button>
       </div>
 
-      {/* ── Body: calendar left + stats right ── */}
-      <div className="flex items-stretch gap-3">
+      {/* ── Body ── */}
+      {/* Desktop: calendar left + vertical stats right */}
+      <div className="hidden items-stretch gap-3 md:flex">
         <Calendar
           mode="single"
           selected={undefined}
@@ -126,8 +127,6 @@ export function ProfileCalendar({
             outside: 'invisible',
           }}
         />
-
-        {/* Stats column */}
         <div className="border-border flex flex-1 flex-col justify-center gap-5 border-l pl-3">
           <div className="flex items-center gap-2.5">
             {streakStatus === 'at_risk' ? (
@@ -167,6 +166,62 @@ export function ProfileCalendar({
                 Days played
               </p>
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile: calendar full-width + 3-col stats below */}
+      <div className="flex flex-col gap-4 md:hidden">
+        <Calendar
+          mode="single"
+          selected={undefined}
+          onSelect={() => {}}
+          disabled={{ after: today }}
+          month={month}
+          onMonthChange={setMonth}
+          modifiers={{ played: playedDates }}
+          components={{ DayButton: PlayedDayButton }}
+          showOutsideDays={false}
+          fixedWeeks
+          ISOWeek
+          className="pointer-events-none w-full bg-transparent p-0"
+          classNames={{
+            nav: 'hidden',
+            month_caption: 'hidden',
+            month_grid: 'w-full',
+            weekday:
+              'flex-1 text-[0.65rem] font-normal text-muted-foreground/50 text-center select-none pb-1',
+            day: 'group/day relative aspect-square h-full w-full p-0 text-center select-none',
+            today: 'rounded-md bg-muted/60 text-foreground font-medium',
+            disabled: 'text-muted-foreground/30 opacity-100',
+            outside: 'invisible',
+          }}
+        />
+        <div className="border-border grid grid-cols-3 divide-x border-t pt-4">
+          <div className="flex flex-col items-center gap-1 px-2">
+            {streakStatus === 'at_risk' ? (
+              <Snowflake className={`size-5 ${flameClass}`} />
+            ) : (
+              <Flame className={`size-5 ${flameClass}`} />
+            )}
+            <p className="text-base font-bold tabular-nums">{activeStreak}</p>
+            <p className="text-muted-foreground text-center text-[10px]">
+              Streak
+            </p>
+          </div>
+          <div className="flex flex-col items-center gap-1 px-2">
+            <Award className="text-muted-foreground size-5" />
+            <p className="text-base font-bold tabular-nums">{bestStreak}</p>
+            <p className="text-muted-foreground text-center text-[10px]">
+              Best
+            </p>
+          </div>
+          <div className="flex flex-col items-center gap-1 px-2">
+            <CalendarDays className="text-muted-foreground size-5" />
+            <p className="text-base font-bold tabular-nums">{totalGames}</p>
+            <p className="text-muted-foreground text-center text-[10px]">
+              Played
+            </p>
           </div>
         </div>
       </div>

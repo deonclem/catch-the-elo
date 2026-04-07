@@ -28,10 +28,9 @@ export default async function WelcomePage() {
 
   const username = profile?.username ?? 'there'
 
-  const dailyResult =
-    dailyGame
-      ? await getDailyGameResultForUser(user.id, dailyGame.id)
-      : null
+  const dailyResult = dailyGame
+    ? await getDailyGameResultForUser(user.id, dailyGame.id)
+    : null
   const hasPlayedToday = dailyResult !== null
 
   return (

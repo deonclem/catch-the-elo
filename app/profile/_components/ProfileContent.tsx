@@ -1,10 +1,9 @@
-import { Button } from '@/components/ui/button'
 import { UserAvatar } from '@/components/ui/UserAvatar'
 import { signOut } from '@/lib/actions/auth'
 import type { DailyHistoryEntry } from '@/lib/dal/game_results'
 import type { Profile, StreakStatus } from '@/lib/dal/profiles'
 import type { RankedSessionHistoryEntry } from '@/lib/dal/ranked_sessions'
-import { Hash, Swords, Trophy } from 'lucide-react'
+import { Hash, LogOut, Swords, Trophy } from 'lucide-react'
 import { AvatarPickerDialog } from './AvatarPickerDialog'
 import { DeleteAccountDialog } from './DeleteAccountDialog'
 import { EloChart } from './EloChart'
@@ -136,12 +135,19 @@ export function ProfileContent({
         {/* ── 4. Account (owner only) ── */}
         {isOwner && (
           <Section title="Account">
-            <form action={signOut}>
-              <Button type="submit" variant="outline" className="w-full">
-                Sign out
-              </Button>
-            </form>
-            <DeleteAccountDialog />
+            <div className="bg-card border-border overflow-hidden rounded-xl border">
+              <form action={signOut}>
+                <button
+                  type="submit"
+                  className="text-foreground hover:bg-muted/50 flex w-full items-center gap-3 px-4 py-3.5 text-sm font-medium transition-colors"
+                >
+                  <LogOut className="text-muted-foreground size-4" />
+                  Log out
+                </button>
+              </form>
+              <div className="border-border border-t" />
+              <DeleteAccountDialog username={profile.username ?? ''} />
+            </div>
           </Section>
         )}
       </div>

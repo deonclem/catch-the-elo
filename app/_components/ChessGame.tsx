@@ -143,6 +143,11 @@ export function ChessGame({
         whiteClock={whiteClock}
         blackClock={blackClock}
         isAtLastMove={isAtLastMove}
+        moveLabel={moveLabel}
+        canGoBack={canGoBack}
+        canGoForward={canGoForward}
+        onBack={goBack}
+        onForward={goForward}
         header={
           <div className="text-center">
             <h1 className="text-3xl font-bold tracking-tight md:text-4xl">

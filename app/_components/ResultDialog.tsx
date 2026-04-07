@@ -131,7 +131,7 @@ const SCORE_TIERS: [number, string[]][] = [
     [
       'Historical.',
       'A new low score has been set.',
-      'You\'re supposed to think before submitting.',
+      "You're supposed to think before submitting.",
       'You need a hug.',
     ],
   ],

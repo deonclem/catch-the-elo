@@ -36,8 +36,8 @@ export function GuessCard({
       {/* Content */}
       <div className="p-4">{children}</div>
 
-      {/* Navigator footer */}
-      <div className="border-border flex flex-col items-center gap-2 border-t px-4 py-3">
+      {/* Navigator footer — desktop only (mobile has controls below the board) */}
+      <div className="border-border hidden flex-col items-center gap-2 border-t px-4 py-3 md:flex">
         <MoveNavigator
           moveLabel={moveLabel}
           canGoBack={canGoBack}
