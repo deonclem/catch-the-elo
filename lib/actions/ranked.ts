@@ -13,7 +13,9 @@ import {
 } from '@/lib/dal/game_results'
 import { getProfileByUserId, updateUserRating } from '@/lib/dal/profiles'
 import {
+  calculateAverageElo,
   calculateRatingChange,
+  calculateScore,
   INITIAL_RATING,
   RANKED_ROUNDS,
 } from '@/lib/chess/scoring'
@@ -43,8 +45,6 @@ const submitRankedRoundSchema = z.object({
   roundNumber: z.number().int().min(1).max(RANKED_ROUNDS),
   gameId: z.string().uuid(),
   guessElo: z.number().int().min(100).max(3500),
-  actualElo: z.number().int().min(100).max(3500),
-  score: z.number().int().min(0).max(5000),
 })
 
 export type SubmitRankedRoundResult =
@@ -61,8 +61,7 @@ export async function submitRankedRound(
   const parsed = submitRankedRoundSchema.safeParse(params)
   if (!parsed.success) return { error: 'Invalid input' }
 
-  const { sessionId, roundNumber, gameId, guessElo, actualElo, score } =
-    parsed.data
+  const { sessionId, roundNumber, gameId, guessElo } = parsed.data
 
   const supabase = await createClient()
   const {
@@ -73,12 +72,31 @@ export async function submitRankedRound(
   // Verify session belongs to user and is active
   const { data: session } = await supabase
     .from('ranked_sessions')
-    .select('id, user_id, status, rating_before')
+    .select('id, user_id, status, rating_before, game_ids')
     .eq('id', sessionId)
     .eq('user_id', user.id)
     .eq('status', 'active')
     .single()
   if (!session) return { error: 'Session not found or already completed' }
+
+  // Verify the submitted game is the one assigned to this round
+  const expectedGameId = session.game_ids[roundNumber - 1]
+  if (!expectedGameId || gameId !== expectedGameId) {
+    return { error: 'Invalid game for this round' }
+  }
+
+  // Re-derive actualElo and score server-side — never trust client values
+  const { data: game } = await supabase
+    .from('games')
+    .select('white_elo, black_elo')
+    .eq('id', gameId)
+    .single()
+  if (!game) return { error: 'Game not found' }
+
+  const actualElo = calculateAverageElo(game.white_elo, game.black_elo)
+  if (actualElo === null) return { error: 'Invalid game data' }
+
+  const score = calculateScore(guessElo, actualElo)
 
   // Idempotent: return existing result if this round was already submitted
   const existingResults = await getRankedSessionResults(sessionId)

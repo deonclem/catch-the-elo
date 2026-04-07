@@ -93,8 +93,6 @@ export function RankedGame({ session, games, completedRounds }: Props) {
       roundNumber: currentRoundIndex + 1,
       gameId: session.gameIds[currentRoundIndex]!,
       guessElo: Number(guess),
-      actualElo,
-      score,
     })
     setIsSubmitting(false)
     if ('error' in result) {
