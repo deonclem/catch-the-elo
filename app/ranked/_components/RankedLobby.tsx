@@ -6,6 +6,7 @@ import { Swords, TrendingUp } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { startRankedSession } from '@/lib/actions/ranked'
 import { RANKED_ROUNDS } from '@/lib/chess/scoring'
+import posthog from 'posthog-js'
 
 type Props = {
   rating: number
@@ -17,6 +18,7 @@ export function RankedLobby({ rating }: Props) {
   const [error, setError] = useState<string | null>(null)
 
   function handleStart() {
+    posthog.capture('ranked_session_started', { rating })
     startTransition(async () => {
       const result = await startRankedSession()
       // Always refresh — if a session already exists (e.g. opened in another tab),

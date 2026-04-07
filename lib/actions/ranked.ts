@@ -19,6 +19,7 @@ import {
   INITIAL_RATING,
   RANKED_ROUNDS,
 } from '@/lib/chess/scoring'
+import { getPostHogClient } from '@/lib/posthog-server'
 
 export async function startRankedSession(): Promise<{ error?: string }> {
   const supabase = await createClient()
@@ -132,13 +133,39 @@ export async function submitRankedRound(
     ratingAfter,
   })
 
+  const posthog = getPostHogClient()
+  posthog.capture({
+    distinctId: user.id,
+    event: 'ranked_round_submitted',
+    properties: {
+      round_number: roundNumber,
+      guess_elo: guessElo,
+      actual_elo: actualElo,
+      score,
+      rating_change: ratingChange,
+      rating_after: ratingAfter,
+    },
+  })
+
   // Finalize session after the last round
   if (roundNumber === RANKED_ROUNDS) {
     const allResults = [...existingResults, { score, ratingAfter }]
     const totalScore = allResults.reduce((sum, r) => sum + r.score, 0)
     await completeRankedSession(sessionId, totalScore, ratingAfter)
     await updateUserRating(user.id, ratingAfter, totalScore)
+    posthog.capture({
+      distinctId: user.id,
+      event: 'ranked_session_completed',
+      properties: {
+        total_score: totalScore,
+        rating_before: session.rating_before,
+        rating_after: ratingAfter,
+        rating_change: ratingAfter - session.rating_before,
+      },
+    })
   }
+
+  await posthog.shutdown()
 
   return { ratingChange, ratingAfter }
 }

@@ -8,6 +8,7 @@ import { ScoreBar } from '@/app/_components/ScoreBar'
 import { startRankedSession } from '@/lib/actions/ranked'
 import { RANKED_ROUNDS, getResultIllustrationSrc } from '@/lib/chess/scoring'
 import type { RoundResult } from '@/lib/dal/game_results'
+import posthog from 'posthog-js'
 
 type Props = {
   ratingBefore: number
@@ -28,6 +29,10 @@ export function SessionCompleteCard({
   const ratingDelta = ratingAfter - ratingBefore
 
   function handlePlayAgain() {
+    posthog.capture('ranked_session_replayed', {
+      total_score: totalScore,
+      rating_after: ratingAfter,
+    })
     startTransition(async () => {
       const result = await startRankedSession()
       if (result.error) {

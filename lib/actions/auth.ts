@@ -15,6 +15,7 @@ import {
   type SignUpValues,
   type UsernameValues,
 } from '@/lib/validations/auth'
+import { getPostHogClient } from '@/lib/posthog-server'
 import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 
@@ -87,6 +88,16 @@ export async function signUp(
 
   await savePendingDailyResult(user.id)
   await markOnboarded(user.id)
+
+  const posthog = getPostHogClient()
+  posthog.identify({ distinctId: user.id, properties: { email, username } })
+  posthog.capture({
+    distinctId: user.id,
+    event: 'user_signed_up',
+    properties: { username, method: 'email' },
+  })
+  await posthog.shutdown()
+
   redirect(next?.startsWith('/') && next !== '/' ? next : '/welcome')
 }
 
@@ -103,7 +114,10 @@ export async function signIn(
   const { email, password } = parsed.data
   const supabase = await createClient()
 
-  const { error } = await supabase.auth.signInWithPassword({ email, password })
+  const { data: signInData, error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  })
 
   if (error) {
     const msg = error.message.toLowerCase()
@@ -114,6 +128,17 @@ export async function signIn(
       return { errors: { _form: ['Incorrect email or password'] } }
     }
     return { errors: { _form: [error.message] } }
+  }
+
+  if (signInData.user) {
+    const posthog = getPostHogClient()
+    posthog.identify({ distinctId: signInData.user.id, properties: { email } })
+    posthog.capture({
+      distinctId: signInData.user.id,
+      event: 'user_signed_in',
+      properties: { method: 'email' },
+    })
+    await posthog.shutdown()
   }
 
   redirect(safeNext(next))

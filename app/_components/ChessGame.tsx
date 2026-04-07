@@ -2,6 +2,7 @@
 
 import { useChessGame } from '@/hooks/useChessGame'
 import { submitDailyResult } from '@/lib/actions/games'
+import posthog from 'posthog-js'
 import type { ParsedGame } from '@/lib/chess/parser'
 import type { StreakStatus } from '@/lib/dal/profiles'
 import { CalendarDays, CheckCircle2, History, Target } from 'lucide-react'
@@ -57,6 +58,13 @@ export function ChessGame({
 
   const onResult = dailyGameId
     ? (guessElo: number, actualElo: number, score: number) => {
+        posthog.capture('daily_guess_submitted', {
+          guess_elo: guessElo,
+          actual_elo: actualElo,
+          score,
+          is_logged_in: isLoggedIn,
+          date: selectedDate,
+        })
         setSubmittedResult({ guessElo, actualElo, score })
         if (!isLoggedIn) {
           document.cookie = `dte_daily_result=${encodeURIComponent(JSON.stringify({ gameId: dailyGameId, guessElo, actualElo, score }))}; max-age=${60 * 60 * 48}; path=/; SameSite=Strict`

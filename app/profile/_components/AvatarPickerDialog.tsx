@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button'
 import { updateAvatar } from '@/lib/actions/profile'
 import { AVAILABLE_AVATARS } from '@/lib/avatars'
 import { cn } from '@/lib/utils'
+import posthog from 'posthog-js'
 
 type Props = {
   currentSlug: string | null
@@ -27,7 +28,10 @@ export function AvatarPickerDialog({ currentSlug }: Props) {
   const [saving, setSaving] = useState(false)
 
   function handleOpen(isOpen: boolean) {
-    if (isOpen) setPreview(currentSlug)
+    if (isOpen) {
+      setPreview(currentSlug)
+      posthog.capture('avatar_picker_opened')
+    }
     setOpen(isOpen)
   }
 
@@ -38,6 +42,7 @@ export function AvatarPickerDialog({ currentSlug }: Props) {
     }
     setSaving(true)
     await updateAvatar(preview)
+    posthog.capture('avatar_changed', { avatar: preview })
     setSaving(false)
     setOpen(false)
     router.refresh()

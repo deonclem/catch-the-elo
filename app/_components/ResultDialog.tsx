@@ -14,6 +14,7 @@ import {
 import { Check, Copy, ExternalLink, Flame, Swords, Trophy } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
+import posthog from 'posthog-js'
 import { useMemo, useState } from 'react'
 import { ScoreBar } from './ScoreBar'
 
@@ -165,6 +166,7 @@ export function ResultDialog({
       date ?? new Date().toISOString().slice(0, 10)
     )
     void navigator.clipboard.writeText(text)
+    posthog.capture('daily_result_shared', { score, date })
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }
@@ -243,7 +245,14 @@ export function ResultDialog({
                 Earn a real Elo rating — 5 rounds, one session.
               </p>
               <Button asChild variant="outline" className="w-full" size="sm">
-                <Link href="/ranked">Start a ranked session →</Link>
+                <Link
+                  href="/ranked"
+                  onClick={() =>
+                    posthog.capture('ranked_nudge_clicked', { score })
+                  }
+                >
+                  Start a ranked session →
+                </Link>
               </Button>
             </div>
           )}
@@ -269,7 +278,14 @@ export function ResultDialog({
                 </li>
               </ul>
               <Button asChild className="w-full" size="sm">
-                <Link href="/auth?tab=signup">Create a free account →</Link>
+                <Link
+                  href="/auth?tab=signup"
+                  onClick={() =>
+                    posthog.capture('signup_nudge_clicked', { score })
+                  }
+                >
+                  Create a free account →
+                </Link>
               </Button>
             </div>
           )}

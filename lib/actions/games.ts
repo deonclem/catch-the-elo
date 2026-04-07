@@ -7,6 +7,7 @@ import {
   getDailyGameResultForUser,
 } from '@/lib/dal/game_results'
 import { updateStreak } from '@/lib/dal/profiles'
+import { getPostHogClient } from '@/lib/posthog-server'
 
 const dailyResultSchema = z.object({
   gameId: z.string().uuid(),
@@ -59,5 +60,18 @@ export async function submitDailyResult(
     score: parsed.data.score,
   })
   await updateStreak(user.id)
+
+  const posthog = getPostHogClient()
+  posthog.capture({
+    distinctId: user.id,
+    event: 'daily_result_saved',
+    properties: {
+      guess_elo: parsed.data.guessElo,
+      actual_elo: parsed.data.actualElo,
+      score: parsed.data.score,
+    },
+  })
+  await posthog.shutdown()
+
   return { alreadySubmitted: false }
 }
