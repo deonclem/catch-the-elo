@@ -2,6 +2,7 @@ import { parseDailyGame } from '@/lib/chess/parser'
 import {
   getDailyGameResultForUser,
   getResultsForDailyGames,
+  hasUserPlayedRanked,
 } from '@/lib/dal/game_results'
 import {
   getDailyGame,
@@ -94,16 +95,19 @@ export default async function Home({
   let existingResult = null
   let streak = 0
   let streakStatus: StreakStatus = 'none'
+  let hasPlayedRanked = false
 
   if (user) {
-    const [profile, map] = await Promise.all([
+    const [profile, map, playedRanked] = await Promise.all([
       getProfileByUserId(user.id),
       getResultsForDailyGames(
         user.id,
         recentGames.map((g) => g.id)
       ),
+      hasUserPlayedRanked(user.id),
     ])
     scoreMap = map
+    hasPlayedRanked = playedRanked
     existingResult = scoreMap.has(targetGame.id)
       ? await getDailyGameResultForUser(user.id, targetGame.id)
       : null
@@ -149,6 +153,7 @@ export default async function Home({
           existingResult={existingResult}
           recentDays={recentDays}
           isLoggedIn={user !== null}
+          hasPlayedRanked={hasPlayedRanked}
           streak={streak}
           streakStatus={streakStatus}
           isToday={isToday}

@@ -1,6 +1,10 @@
 'use server'
 
-import { isUsernameTaken, upsertUsername } from '@/lib/dal/profiles'
+import {
+  isUsernameTaken,
+  markOnboarded,
+  upsertUsername,
+} from '@/lib/dal/profiles'
 import { savePendingDailyResult } from '@/lib/helpers/pending-daily-result'
 import { isUsernameAllowed } from '@/lib/username-filter'
 import {
@@ -82,7 +86,8 @@ export async function signUp(
   }
 
   await savePendingDailyResult(user.id)
-  redirect(safeNext(next))
+  await markOnboarded(user.id)
+  redirect(next?.startsWith('/') && next !== '/' ? next : '/welcome')
 }
 
 export async function signIn(
@@ -165,5 +170,6 @@ export async function setUsername(
     return { errors: { username: ['Username is already taken'] } }
   }
 
-  redirect('/')
+  await markOnboarded(user.id)
+  redirect('/welcome')
 }

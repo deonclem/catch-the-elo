@@ -28,6 +28,7 @@ type Props = {
   existingResult?: ExistingResult | null
   recentDays: DayEntry[]
   isLoggedIn: boolean
+  hasPlayedRanked: boolean
   streak: number
   streakStatus: StreakStatus
   isToday: boolean
@@ -41,6 +42,7 @@ export function ChessGame({
   existingResult,
   recentDays,
   isLoggedIn,
+  hasPlayedRanked,
   streak,
   streakStatus,
   isToday,
@@ -56,7 +58,9 @@ export function ChessGame({
   const onResult = dailyGameId
     ? (guessElo: number, actualElo: number, score: number) => {
         setSubmittedResult({ guessElo, actualElo, score })
-        document.cookie = `dte_daily_result=${encodeURIComponent(JSON.stringify({ gameId: dailyGameId, guessElo, actualElo, score }))}; max-age=${60 * 60 * 48}; path=/; SameSite=Strict`
+        if (!isLoggedIn) {
+          document.cookie = `dte_daily_result=${encodeURIComponent(JSON.stringify({ gameId: dailyGameId, guessElo, actualElo, score }))}; max-age=${60 * 60 * 48}; path=/; SameSite=Strict`
+        }
         submitDailyResult(dailyGameId, guessElo, actualElo, score)
           .then(({ alreadySubmitted }) => {
             if (alreadySubmitted) {
@@ -196,6 +200,7 @@ export function ChessGame({
           date={selectedDate}
           lichessUrl={game.id ? `https://lichess.org/${game.id}` : undefined}
           isLoggedIn={isLoggedIn}
+          hasPlayedRanked={hasPlayedRanked}
         />
       )}
     </div>

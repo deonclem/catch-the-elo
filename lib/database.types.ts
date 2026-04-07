@@ -167,6 +167,7 @@ export type Database = {
           deleted_at: string | null
           highest_score: number
           id: string
+          onboarded_at: string | null
           rating: number
           streak_last_played: string | null
           updated_at: string
@@ -181,6 +182,7 @@ export type Database = {
           deleted_at?: string | null
           highest_score?: number
           id: string
+          onboarded_at?: string | null
           rating?: number
           streak_last_played?: string | null
           updated_at?: string
@@ -195,6 +197,7 @@ export type Database = {
           deleted_at?: string | null
           highest_score?: number
           id?: string
+          onboarded_at?: string | null
           rating?: number
           streak_last_played?: string | null
           updated_at?: string

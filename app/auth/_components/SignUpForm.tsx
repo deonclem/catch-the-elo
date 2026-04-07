@@ -3,9 +3,10 @@
 import { useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useTransition } from 'react'
-import { CheckCircle2, XCircle } from 'lucide-react'
+import { CheckCircle2, RefreshCw, XCircle } from 'lucide-react'
 import { signUp, type AuthActionState } from '@/lib/actions/auth'
 import { signUpSchema, type SignUpValues } from '@/lib/validations/auth'
+import { generateUsername } from '@/lib/username-generator'
 import { Button } from '@/components/ui/button'
 import {
   Form,
@@ -56,7 +57,7 @@ export function SignUpForm({ next }: { next?: string }) {
 
   const form = useForm<SignUpValues>({
     resolver: zodResolver(signUpSchema),
-    defaultValues: { email: '', password: '', username: '' },
+    defaultValues: { email: '', password: '', username: generateUsername() },
   })
 
   const password = useWatch({ control: form.control, name: 'password' })
@@ -134,11 +135,22 @@ export function SignUpForm({ next }: { next?: string }) {
             <FormItem>
               <FormLabel>Username</FormLabel>
               <FormControl>
-                <Input
-                  placeholder="chess_wizard"
-                  autoComplete="username"
-                  {...field}
-                />
+                <div className="flex gap-2">
+                  <Input autoComplete="username" {...field} />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    aria-label="Suggest another username"
+                    onClick={() =>
+                      form.setValue('username', generateUsername(), {
+                        shouldValidate: true,
+                      })
+                    }
+                  >
+                    <RefreshCw className="h-4 w-4" />
+                  </Button>
+                </div>
               </FormControl>
               <FormMessage />
             </FormItem>

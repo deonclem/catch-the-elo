@@ -13,6 +13,7 @@ Players are shown a real chess game with player names and ratings hidden. They n
 | `/`                   | Live   | Daily chess challenge                       |
 | `/auth`               | Live   | Log in / Sign up (email + Google OAuth)     |
 | `/onboarding`         | Live   | Username picker (OAuth users)               |
+| `/welcome`            | Live   | Post-sign-up welcome screen with CTAs       |
 | `/ranked`             | Live   | Ranked 5-round mode (auth-required)         |
 | `/leaderboard`        | Live   | Global and daily leaderboards               |
 | `/profile`            | Live   | Username, email, sign out (auth-required)   |
@@ -50,6 +51,8 @@ If a logged-in user visits after already submitting today:
 - Emoji progress bar: 🟩 for each 1000-point tier, ⬛ otherwise
 - Copy button → Wordle-style share text
 - "View on Lichess ↗" link (if lichess_id exists)
+- **Anonymous users**: sign-up nudge (streak, leaderboard, ranked) → `/auth?tab=signup`
+- **Logged-in users who haven't played ranked**: ranked mode nudge → `/ranked`
 
 ---
 
@@ -79,10 +82,11 @@ https://gueslo.app
 2. `supabase.auth.signUp()` → creates auth user
 3. Username written to `profiles` table immediately
 4. `savePendingDailyResult(user.id)` called — claims any anonymous daily result cookie
-5. Redirects to `next` param (if present and relative) or `/`
-6. Password rules: ≥8 chars, ≥1 uppercase, ≥1 digit
-7. Username rules: 3–20 chars, alphanumeric + underscores
-8. Profanity filter applied via `leo-profanity` (English + French word lists) + reserved names list (`lib/username-filter.ts`)
+5. `markOnboarded(user.id)` sets `onboarded_at` on the profile
+6. Redirects to `next` param (if a specific non-root path) or `/welcome`
+7. Password rules: ≥8 chars, ≥1 uppercase, ≥1 digit
+8. Username rules: 3–20 chars, alphanumeric + underscores
+9. Profanity filter applied via `leo-profanity` (English + French word lists) + reserved names list (`lib/username-filter.ts`)
 
 ### Email/password log in
 
@@ -95,7 +99,7 @@ https://gueslo.app
 - **Post-login redirect**: if a `next` param is provided, it is stored in a short-lived `auth_next` cookie (10 min, sameSite lax) — **not** appended to `redirectTo`, because Supabase allowlist matching breaks with query params
 - Callback at `/auth/callback` reads + deletes the `auth_next` cookie, then redirects accordingly
 - Callback also calls `savePendingDailyResult(user.id)` to claim any anonymous result
-- New Google users have `username = null` → middleware redirects to `/onboarding` → user picks username → redirected to `/`
+- New Google users have `username = null` → middleware redirects to `/onboarding` → user picks username → `markOnboarded()` sets `onboarded_at` → redirected to `/welcome`
 - Requires `NEXT_PUBLIC_SITE_URL` env var (e.g. `http://localhost:3000` for dev, production URL on Vercel)
 
 ### Anonymous result claiming (`lib/helpers/pending-daily-result.ts`)
@@ -110,10 +114,14 @@ On sign-up or OAuth callback, `savePendingDailyResult(userId)` is called with th
 4. Inserts the `game_results` row + updates streak
 5. Deletes the cookie
 
+### Welcome screen (`/welcome`)
+
+Shown once after sign-up. Celebrates account creation, explains key features, and offers two CTAs: "Play Today's Challenge" (`/`) and "Try Ranked Mode" (`/ranked`). No auth gate — simply redirects to `/auth` if unauthenticated.
+
 ### Onboarding (`/onboarding`)
 
-- Only accessible to authenticated users with `username = null`
-- Redirects to `/auth` if not logged in
+- Only accessible to authenticated users with `username = null` **and** `onboarded_at = null`
+- Redirects to `/auth` if not logged in; redirects to `/` if already onboarded
 
 ---
 
@@ -133,7 +141,7 @@ On sign-up or OAuth callback, `savePendingDailyResult(userId)` is called with th
 ### `profiles`
 
 One row per user. Auto-created on auth signup via trigger (username = null initially).
-Key columns: `username` (nullable until set), `rating` (default 1200, for ranked mode), `highest_score`
+Key columns: `username` (nullable until set), `rating` (default 1200, for ranked mode), `highest_score`, `onboarded_at` (nullable — set once when user completes sign-up flow)
 
 ### `games`
 

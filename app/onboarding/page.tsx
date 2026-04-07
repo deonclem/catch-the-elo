@@ -1,7 +1,7 @@
-import { redirect } from 'next/navigation'
-import { createClient } from '@/utils/supabase/server'
-import { isUsernameTaken } from '@/lib/dal/profiles'
+import { getProfileByUserId, isUsernameTaken } from '@/lib/dal/profiles'
 import { generateUsername } from '@/lib/username-generator'
+import { createClient } from '@/utils/supabase/server'
+import { redirect } from 'next/navigation'
 import { UsernameForm } from './_components/UsernameForm'
 
 export default async function OnboardingPage() {
@@ -11,6 +11,9 @@ export default async function OnboardingPage() {
   } = await supabase.auth.getUser()
 
   if (!user) redirect('/auth')
+
+  const profile = await getProfileByUserId(user.id)
+  if (profile?.onboarded_at) redirect('/')
 
   let defaultUsername = generateUsername()
   for (let i = 0; i < 5; i++) {
@@ -23,10 +26,10 @@ export default async function OnboardingPage() {
       <div className="w-full max-w-sm space-y-6">
         <div className="space-y-1 text-center">
           <h1 className="text-2xl font-bold tracking-tight">
-            Choose a username
+            Almost there — pick your username
           </h1>
           <p className="text-muted-foreground text-sm">
-            Pick a unique username to start playing ranked games.
+            You can&apos;t change this later, so choose wisely.
           </p>
         </div>
         <UsernameForm defaultUsername={defaultUsername} />

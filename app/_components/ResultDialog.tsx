@@ -28,6 +28,7 @@ type Props = {
   ratingChange?: number
   nextLabel?: string
   isLoggedIn?: boolean
+  hasPlayedRanked?: boolean
 }
 
 const SCORE_TIERS: [number, string[]][] = [
@@ -130,7 +131,7 @@ const SCORE_TIERS: [number, string[]][] = [
     [
       'Historical.',
       'A new low score has been set.',
-      'Did you guess your age?',
+      'You\'re supposed to think before submitting.',
       'You need a hug.',
     ],
   ],
@@ -153,6 +154,7 @@ export function ResultDialog({
   ratingChange,
   nextLabel,
   isLoggedIn = true,
+  hasPlayedRanked = true,
 }: Props) {
   const [copied, setCopied] = useState(false)
   const label = useMemo(() => scoreLabel(score), [score])
@@ -230,6 +232,21 @@ export function ResultDialog({
               </div>
             )}
           </div>
+
+          {/* Ranked nudge for logged-in users who haven't tried ranked yet */}
+          {isLoggedIn && !hasPlayedRanked && (
+            <div className="border-border bg-muted/30 w-full rounded-lg border p-3">
+              <p className="text-foreground mb-1 text-sm font-semibold">
+                Try Ranked Mode
+              </p>
+              <p className="text-muted-foreground mb-3 text-xs">
+                Earn a real Elo rating — 5 rounds, one session.
+              </p>
+              <Button asChild variant="outline" className="w-full" size="sm">
+                <Link href="/ranked">Start a ranked session →</Link>
+              </Button>
+            </div>
+          )}
 
           {/* Sign-up nudge for anonymous users */}
           {!isLoggedIn && (

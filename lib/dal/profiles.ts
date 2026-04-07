@@ -238,6 +238,14 @@ export async function updateUserRating(
   }
 }
 
+export async function markOnboarded(userId: string): Promise<void> {
+  const supabase = await createClient()
+  await supabase
+    .from('profiles')
+    .update({ onboarded_at: new Date().toISOString() })
+    .eq('id', userId)
+}
+
 export async function updateAvatarSlug(
   userId: string,
   slug: string
