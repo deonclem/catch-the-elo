@@ -152,6 +152,19 @@
   --sidebar-ring: oklch(0.72 0.22 var(--hue));
 }
 
+/* ── Chessboard overrides ──────────────────────────────────── */
+/* Force pan-y on all board children so vertical scroll works  */
+/* on mobile even when a finger lands on a piece.              */
+.chess-board-wrapper * {
+  touch-action: pan-y !important;
+}
+/* Remove grab/pointer cursor on desktop — board is view-only  */
+@media (pointer: fine) {
+  .chess-board-wrapper * {
+    cursor: default !important;
+  }
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

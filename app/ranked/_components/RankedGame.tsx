@@ -104,6 +104,7 @@ export function RankedGame({ session, games, completedRounds }: Props) {
 
   function handleDialogClose() {
     if (!pendingResult) return
+    window.scrollTo({ top: 0, behavior: 'instant' })
     const roundNumber = currentRoundIndex + 1
     setRoundResults((prev) => [
       ...prev,

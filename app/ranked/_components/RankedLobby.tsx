@@ -19,11 +19,12 @@ export function RankedLobby({ rating }: Props) {
   function handleStart() {
     startTransition(async () => {
       const result = await startRankedSession()
+      // Always refresh — if a session already exists (e.g. opened in another tab),
+      // the server will pick it up and transition to RankedGame automatically.
+      router.refresh()
       if (result.error) {
         setError(result.error)
-        return
       }
-      router.refresh()
     })
   }
 

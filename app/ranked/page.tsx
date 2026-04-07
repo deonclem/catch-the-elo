@@ -56,7 +56,7 @@ export default async function RankedPage() {
   const parsedGames = sessionWithGames.games.map(parseDailyGame)
 
   return (
-    <main className="flex flex-1 flex-col items-center justify-center p-12">
+    <main className="flex flex-1 flex-col items-center justify-center px-0 py-4 md:p-12">
       <RankedGame
         session={activeSession}
         games={parsedGames}
