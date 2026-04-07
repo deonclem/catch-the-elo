@@ -78,6 +78,7 @@ export default async function RootLayout({
           streak={streak}
           streakStatus={streakStatus}
           avatarSlug={profile?.avatar_slug ?? null}
+          username={profile?.username ?? null}
         />
         <div className="flex flex-1 flex-col pb-14 md:pt-16 md:pb-0">
           {children}

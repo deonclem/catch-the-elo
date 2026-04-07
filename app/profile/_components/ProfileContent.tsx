@@ -1,7 +1,6 @@
 import { Button } from '@/components/ui/button'
 import { UserAvatar } from '@/components/ui/UserAvatar'
 import { signOut } from '@/lib/actions/auth'
-import { RANKED_ROUNDS } from '@/lib/chess/scoring'
 import type { DailyHistoryEntry } from '@/lib/dal/game_results'
 import type { Profile, StreakStatus } from '@/lib/dal/profiles'
 import type { RankedSessionHistoryEntry } from '@/lib/dal/ranked_sessions'
@@ -112,8 +111,8 @@ export function ProfileContent({
             />
             <StatCard
               icon={<Hash className="size-5" />}
-              value={rankedHistory.length * RANKED_ROUNDS}
-              label="Rounds played"
+              value={rankedHistory.length}
+              label="Sessions played"
             />
           </div>
           {rankedHistory.length > 0 && (

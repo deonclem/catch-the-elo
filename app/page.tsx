@@ -24,8 +24,7 @@ import type { DayEntry } from './_components/DailyCalendar'
 
 export const metadata: Metadata = {
   title: 'Gueslo | Ranked Guess The Elo',
-  description:
-    "Chess Eloguessr. Play Daily Games & Ranked Mode.",
+  description: 'Chess Eloguessr. Play Daily Games & Ranked Mode.',
   alternates: { canonical: 'https://gueslo.app' },
 }
 
@@ -33,8 +32,7 @@ const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'WebApplication',
   name: 'Gueslo',
-  description:
-    'Chess Eloguessr. Play Daily Games & Ranked Mode.',
+  description: 'Chess Eloguessr. Play Daily Games & Ranked Mode.',
   url: 'https://gueslo.app',
   applicationCategory: 'Game',
   genre: 'Chess',

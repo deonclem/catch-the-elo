@@ -146,6 +146,72 @@ export async function getRatingLeaderboard(): Promise<
   }))
 }
 
+export async function getUserStreakLeaderboardEntry(
+  userId: string
+): Promise<StreakLeaderboardEntry | null> {
+  const supabase = await createClient()
+  const yesterday = utcDateString(-1)
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('username, avatar_slug, current_streak, streak_last_played')
+    .eq('id', userId)
+    .is('deleted_at', null)
+    .single()
+
+  if (
+    !profile ||
+    !profile.streak_last_played ||
+    profile.streak_last_played < yesterday ||
+    profile.current_streak === 0
+  )
+    return null
+
+  const { count } = await supabase
+    .from('profiles')
+    .select('*', { count: 'exact', head: true })
+    .gte('streak_last_played', yesterday)
+    .gt('current_streak', profile.current_streak)
+    .is('deleted_at', null)
+
+  return {
+    rank: (count ?? 0) + 1,
+    userId,
+    username: profile.username,
+    avatarSlug: profile.avatar_slug,
+    streak: profile.current_streak,
+  }
+}
+
+export async function getUserRatingLeaderboardEntry(
+  userId: string
+): Promise<RatingLeaderboardEntry | null> {
+  const supabase = await createClient()
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('username, avatar_slug, rating')
+    .eq('id', userId)
+    .is('deleted_at', null)
+    .single()
+
+  if (!profile) return null
+
+  const { count } = await supabase
+    .from('profiles')
+    .select('*', { count: 'exact', head: true })
+    .gt('rating', profile.rating)
+    .is('deleted_at', null)
+
+  return {
+    rank: (count ?? 0) + 1,
+    userId,
+    username: profile.username,
+    avatarSlug: profile.avatar_slug,
+    rating: profile.rating,
+  }
+}
+
 export async function updateUserRating(
   userId: string,
   newRating: number,

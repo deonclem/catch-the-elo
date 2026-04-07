@@ -103,6 +103,7 @@ https://gueslo.app
 When an anonymous user plays the daily game, the result is stored in a `dte_daily_result` cookie (48h, SameSite=Strict) as `{ gameId, guessElo, actualElo, score }`.
 
 On sign-up or OAuth callback, `savePendingDailyResult(userId)` is called with the user ID **directly** (not via `getUser()` — session cookies may not be visible within the same Server Action that just created them). It:
+
 1. Reads + validates the cookie
 2. Verifies the `gameId` matches today's `daily_schedule`
 3. Skips if a result already exists (idempotent)

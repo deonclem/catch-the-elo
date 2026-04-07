@@ -1,26 +1,29 @@
-import type { Metadata } from 'next'
+import { UserAvatar } from '@/components/ui/UserAvatar'
+import {
+  getDailyLeaderboard,
+  getUserDailyLeaderboardEntry,
+  type LeaderboardEntry,
+} from '@/lib/dal/game_results'
+import { getDailyGame } from '@/lib/dal/games'
+import {
+  getRatingLeaderboard,
+  getStreakLeaderboard,
+  getUserRatingLeaderboardEntry,
+  getUserStreakLeaderboardEntry,
+  type RatingLeaderboardEntry,
+  type StreakLeaderboardEntry,
+} from '@/lib/dal/profiles'
+import { cn } from '@/lib/utils'
 import { createClient } from '@/utils/supabase/server'
+import { Flame, Swords, Target } from 'lucide-react'
+import type { Metadata } from 'next'
+import Link from 'next/link'
 
 export const metadata: Metadata = {
   title: 'Leaderboard',
   description:
     'Top Elo guessers worldwide. See the daily and all-time rankings.',
 }
-import { getDailyGame } from '@/lib/dal/games'
-import { Target, Flame, Swords } from 'lucide-react'
-import Link from 'next/link'
-import {
-  getDailyLeaderboard,
-  type LeaderboardEntry,
-} from '@/lib/dal/game_results'
-import {
-  getStreakLeaderboard,
-  getRatingLeaderboard,
-  type StreakLeaderboardEntry,
-  type RatingLeaderboardEntry,
-} from '@/lib/dal/profiles'
-import { UserAvatar } from '@/components/ui/UserAvatar'
-import { cn } from '@/lib/utils'
 
 function RankBadge({ rank }: { rank: number }) {
   if (rank === 1)
@@ -50,11 +53,13 @@ function Panel({
   title,
   icon,
   empty,
+  pinnedRow,
   children,
 }: {
   title: string
   icon: React.ReactNode
   empty: boolean
+  pinnedRow?: React.ReactNode
   children: React.ReactNode
 }) {
   return (
@@ -70,6 +75,19 @@ function Panel({
       ) : (
         <table className="w-full text-sm">
           <tbody className="divide-border divide-y">{children}</tbody>
+          {pinnedRow && (
+            <tbody>
+              <tr>
+                <td
+                  colSpan={3}
+                  className="text-muted-foreground border-border border-t px-4 py-1 text-center text-xs"
+                >
+                  ···
+                </td>
+              </tr>
+              {pinnedRow}
+            </tbody>
+          )}
         </table>
       )}
     </div>
@@ -94,13 +112,13 @@ function DailyRow({
       <td className="py-2.5 pr-2 pl-4 text-center">
         <RankBadge rank={entry.rank} />
       </td>
-      <td className="py-2.5 pr-2">
-        <div className="flex items-center gap-2">
+      <td className="w-full max-w-0 py-2.5 pr-2">
+        <div className="flex min-w-0 items-center gap-2">
           <UserAvatar slug={entry.avatarSlug} size="sm" />
           {entry.username ? (
             <Link
               href={isCurrentUser ? '/profile' : `/profile/${entry.username}`}
-              className="hover:underline"
+              className="truncate hover:underline"
             >
               {entry.username}
               {isCurrentUser && (
@@ -110,7 +128,7 @@ function DailyRow({
               )}
             </Link>
           ) : (
-            <span>Anonymous</span>
+            <span className="truncate">Anonymous</span>
           )}
         </div>
       </td>
@@ -139,13 +157,13 @@ function StreakRow({
       <td className="py-2.5 pr-2 pl-4 text-center">
         <RankBadge rank={entry.rank} />
       </td>
-      <td className="py-2.5 pr-2">
-        <div className="flex items-center gap-2">
+      <td className="w-full max-w-0 py-2.5 pr-2">
+        <div className="flex min-w-0 items-center gap-2">
           <UserAvatar slug={entry.avatarSlug} size="sm" />
           {entry.username ? (
             <Link
               href={isCurrentUser ? '/profile' : `/profile/${entry.username}`}
-              className="hover:underline"
+              className="truncate hover:underline"
             >
               {entry.username}
               {isCurrentUser && (
@@ -155,7 +173,7 @@ function StreakRow({
               )}
             </Link>
           ) : (
-            <span>Anonymous</span>
+            <span className="truncate">Anonymous</span>
           )}
         </div>
       </td>
@@ -187,13 +205,13 @@ function RatingRow({
       <td className="py-2.5 pr-2 pl-4 text-center">
         <RankBadge rank={entry.rank} />
       </td>
-      <td className="py-2.5 pr-2">
-        <div className="flex items-center gap-2">
+      <td className="w-full max-w-0 py-2.5 pr-2">
+        <div className="flex min-w-0 items-center gap-2">
           <UserAvatar slug={entry.avatarSlug} size="sm" />
           {entry.username ? (
             <Link
               href={isCurrentUser ? '/profile' : `/profile/${entry.username}`}
-              className="hover:underline"
+              className="truncate hover:underline"
             >
               {entry.username}
               {isCurrentUser && (
@@ -203,7 +221,7 @@ function RatingRow({
               )}
             </Link>
           ) : (
-            <span>Anonymous</span>
+            <span className="truncate">Anonymous</span>
           )}
         </div>
       </td>
@@ -222,11 +240,30 @@ export default async function LeaderboardPage() {
     data: { user },
   } = await supabase.auth.getUser()
 
-  const [dailyEntries, streakEntries, ratingEntries] = await Promise.all([
+  const [
+    dailyEntries,
+    streakEntries,
+    ratingEntries,
+    userDailyEntry,
+    userStreakEntry,
+    userRatingEntry,
+  ] = await Promise.all([
     dailyGame ? getDailyLeaderboard(dailyGame.id) : Promise.resolve([]),
     getStreakLeaderboard(),
     getRatingLeaderboard(),
+    dailyGame && user
+      ? getUserDailyLeaderboardEntry(dailyGame.id, user.id)
+      : Promise.resolve(null),
+    user ? getUserStreakLeaderboardEntry(user.id) : Promise.resolve(null),
+    user ? getUserRatingLeaderboardEntry(user.id) : Promise.resolve(null),
   ])
+
+  const dailyPinned =
+    userDailyEntry && !dailyEntries.some((e) => e.userId === user?.id)
+  const streakPinned =
+    userStreakEntry && !streakEntries.some((e) => e.userId === user?.id)
+  const ratingPinned =
+    userRatingEntry && !ratingEntries.some((e) => e.userId === user?.id)
 
   const today = new Date().toLocaleDateString('en-US', {
     month: 'long',
@@ -235,8 +272,8 @@ export default async function LeaderboardPage() {
   })
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-4xl flex-col gap-6 p-4 pb-24 md:pb-8">
-      <div className="pt-4 text-center">
+    <main className="flex min-h-screen flex-col items-center gap-6 p-4 pb-24 md:pb-8">
+      <div className="w-full pt-4 text-center">
         <h1 className="text-3xl font-bold tracking-tight md:text-4xl">
           <span className="from-primary to-primary-end bg-gradient-to-r bg-clip-text text-transparent">
             Leader
@@ -246,11 +283,16 @@ export default async function LeaderboardPage() {
         <p className="text-muted-foreground mt-1 text-sm">{today}</p>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+      <div className="mx-auto grid w-full max-w-[980px] grid-cols-1 gap-4 md:grid-cols-3">
         <Panel
           title="Today's Best"
           icon={<Target className="size-4" />}
           empty={dailyEntries.length === 0}
+          pinnedRow={
+            dailyPinned ? (
+              <DailyRow entry={userDailyEntry!} isCurrentUser />
+            ) : undefined
+          }
         >
           {dailyEntries.map((entry) => (
             <DailyRow
@@ -262,9 +304,14 @@ export default async function LeaderboardPage() {
         </Panel>
 
         <Panel
-          title="Top Streaks"
+          title="Top Active Streaks"
           icon={<Flame className="size-4" />}
           empty={streakEntries.length === 0}
+          pinnedRow={
+            streakPinned ? (
+              <StreakRow entry={userStreakEntry!} isCurrentUser />
+            ) : undefined
+          }
         >
           {streakEntries.map((entry) => (
             <StreakRow
@@ -279,6 +326,11 @@ export default async function LeaderboardPage() {
           title="Top Ratings"
           icon={<Swords className="size-4" />}
           empty={ratingEntries.length === 0}
+          pinnedRow={
+            ratingPinned ? (
+              <RatingRow entry={userRatingEntry!} isCurrentUser />
+            ) : undefined
+          }
         >
           {ratingEntries.map((entry) => (
             <RatingRow

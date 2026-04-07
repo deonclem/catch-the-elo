@@ -33,11 +33,13 @@ export function Navbar({
   streak = 0,
   streakStatus = 'none',
   avatarSlug = null,
+  username = null,
 }: {
   isLoggedIn: boolean
   streak?: number
   streakStatus?: StreakStatus
   avatarSlug?: string | null
+  username?: string | null
 }) {
   const pathname = usePathname()
   const profileHref = isLoggedIn ? '/profile' : '/auth'
@@ -98,22 +100,25 @@ export function Navbar({
                 <span>{streak}</span>
               </div>
             )}
-            {isLoggedIn && (
-              <Link href="/profile" aria-label="My Profile">
-                <UserAvatar slug={avatarSlug} size="sm" />
-              </Link>
-            )}
-            <Button
-              variant={isLoggedIn ? 'outline' : 'default'}
-              size="sm"
-              asChild
-            >
-              {isLoggedIn ? (
-                <Link href="/profile">My Profile</Link>
-              ) : (
+            {isLoggedIn ? (
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-auto py-1 pr-3 pl-1"
+                asChild
+              >
+                <Link href="/profile" className="flex items-center gap-2">
+                  <UserAvatar slug={avatarSlug} size="sm" />
+                  <span className="max-w-[120px] truncate">
+                    {username ?? 'Profile'}
+                  </span>
+                </Link>
+              </Button>
+            ) : (
+              <Button variant="default" size="sm" asChild>
                 <Link href="/auth">Log In</Link>
-              )}
-            </Button>
+              </Button>
+            )}
           </div>
         </div>
       </header>

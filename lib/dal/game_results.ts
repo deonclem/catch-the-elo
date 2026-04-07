@@ -182,6 +182,49 @@ export async function getUserDailyHistory(
   }))
 }
 
+export async function getUserDailyLeaderboardEntry(
+  gameId: string,
+  userId: string
+): Promise<LeaderboardEntry | null> {
+  const supabase = await createClient()
+
+  const { data: result } = await supabase
+    .from('game_results')
+    .select('score, guess_elo, actual_elo')
+    .eq('game_id', gameId)
+    .eq('user_id', userId)
+    .eq('mode', 'daily')
+    .is('deleted_at', null)
+    .single()
+
+  if (!result) return null
+
+  const [{ data: profile }, { count }] = await Promise.all([
+    supabase
+      .from('profiles')
+      .select('username, avatar_slug')
+      .eq('id', userId)
+      .single(),
+    supabase
+      .from('game_results')
+      .select('*', { count: 'exact', head: true })
+      .eq('game_id', gameId)
+      .eq('mode', 'daily')
+      .is('deleted_at', null)
+      .gt('score', result.score),
+  ])
+
+  return {
+    rank: (count ?? 0) + 1,
+    userId,
+    username: profile?.username ?? null,
+    avatarSlug: profile?.avatar_slug ?? null,
+    score: result.score,
+    guessElo: result.guess_elo,
+    actualElo: result.actual_elo,
+  }
+}
+
 export async function getDailyLeaderboard(
   gameId: string
 ): Promise<LeaderboardEntry[]> {
@@ -194,7 +237,7 @@ export async function getDailyLeaderboard(
     .eq('mode', 'daily')
     .is('deleted_at', null)
     .order('score', { ascending: false })
-    .limit(50)
+    .limit(10)
 
   if (!results || results.length === 0) return []
 
