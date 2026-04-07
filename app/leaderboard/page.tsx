@@ -23,6 +23,19 @@ export const metadata: Metadata = {
   title: 'Leaderboard',
   description:
     'Top Elo guessers worldwide. See the daily and all-time rankings.',
+  alternates: { canonical: 'https://gueslo.app/leaderboard' },
+  openGraph: {
+    title: 'Leaderboard — Gueslo',
+    description:
+      'Top Elo guessers worldwide. Daily scores, longest streaks, and highest ratings.',
+    url: 'https://gueslo.app/leaderboard',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Leaderboard — Gueslo',
+    description:
+      'Top Elo guessers worldwide. Daily scores, longest streaks, and highest ratings.',
+  },
 }
 
 function RankBadge({ rank }: { rank: number }) {

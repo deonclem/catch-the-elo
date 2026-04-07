@@ -16,7 +16,7 @@ Players are shown a real chess game with player names and ratings hidden. They n
 | `/welcome`            | Live   | Post-sign-up welcome screen with CTAs       |
 | `/ranked`             | Live   | Ranked 5-round mode (auth-required)         |
 | `/leaderboard`        | Live   | Global and daily leaderboards               |
-| `/profile`            | Live   | Username, email, sign out (auth-required)   |
+| `/profile`            | Live   | Username, email, log out (auth-required)    |
 | `/profile/[username]` | Live   | Public read-only profile (no auth required) |
 
 ---
@@ -27,7 +27,7 @@ Players are shown a real chess game with player names and ratings hidden. They n
 
 - Responsive chess board (85vw mobile, max 504px desktop)
 - Player clocks above (black) and below (white) the board — shown only if PGN contains clock data
-- Move navigator: ‹ Move N / Total › with keyboard arrow support (←/→)
+- Move navigator: large ‹/› buttons directly below the board on mobile; compact navigator in the guess card on desktop; keyboard arrow support (←/→) on all devices
 - Elo guess input (numeric, 100–3500) + Submit button
 
 ### Key behaviors
@@ -210,7 +210,11 @@ change    = round(32 × (actual - expected))
 
 ### Rating security
 
-`submitRankedRound` never trusts client-provided rating. It computes current rating server-side from `session.rating_before` + previous rounds' `rating_after` values.
+`submitRankedRound` never trusts client-provided values. It:
+
+- Verifies `gameId` matches `session.game_ids[roundNumber - 1]` (the active round's assigned game)
+- Re-fetches the game from the DB and re-derives `actualElo` and `score` server-side — these are not accepted from the client
+- Computes current rating from `session.rating_before` + previous rounds' `rating_after` values
 
 ---
 

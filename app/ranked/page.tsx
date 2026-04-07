@@ -5,6 +5,19 @@ export const metadata: Metadata = {
   title: 'Ranked Mode',
   description:
     '5-round ranked sessions. Earn an Elo rating based on your Elo guesses.',
+  alternates: { canonical: 'https://gueslo.app/ranked' },
+  openGraph: {
+    title: 'Ranked Mode — Gueslo',
+    description:
+      'Play 5 rounds and earn a real Elo rating. How accurate is your chess intuition?',
+    url: 'https://gueslo.app/ranked',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Ranked Mode — Gueslo',
+    description:
+      'Play 5 rounds and earn a real Elo rating. How accurate is your chess intuition?',
+  },
 }
 import { getRankedSessionResults } from '@/lib/dal/game_results'
 import { getProfileByUserId } from '@/lib/dal/profiles'
