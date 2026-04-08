@@ -5,15 +5,15 @@ import { EloGuessForm } from '@/app/_components/EloGuessForm'
 import { GuessCard } from '@/app/_components/GuessCard'
 import { ResultDialog } from '@/app/_components/ResultDialog'
 import { useChessGame } from '@/hooks/useChessGame'
-import type { RoundResult } from '@/lib/dal/game_results'
-import type { RankedSession } from '@/lib/dal/ranked_sessions'
+import { submitRankedRound } from '@/lib/actions/ranked'
 import type { ParsedGame } from '@/lib/chess/parser'
 import {
   calculateAverageElo,
   calculateScore,
   RANKED_ROUNDS,
 } from '@/lib/chess/scoring'
-import { submitRankedRound } from '@/lib/actions/ranked'
+import type { RoundResult } from '@/lib/dal/game_results'
+import type { RankedSession } from '@/lib/dal/ranked_sessions'
 import { Swords, Target } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { RoundProgress } from './RoundProgress'
@@ -186,7 +186,7 @@ export function RankedGame({ session, games, completedRounds }: Props) {
       <GuessCard
         Icon={Target}
         iconClass="text-primary"
-        title="Make Your Guess"
+        title="Guess The Elo"
         moveLabel={moveLabel}
         canGoBack={canGoBack}
         canGoForward={canGoForward}

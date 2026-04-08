@@ -2,11 +2,11 @@
 
 import { useChessGame } from '@/hooks/useChessGame'
 import { submitDailyResult } from '@/lib/actions/games'
-import posthog from 'posthog-js'
 import type { ParsedGame } from '@/lib/chess/parser'
 import type { StreakStatus } from '@/lib/dal/profiles'
 import { CalendarDays, CheckCircle2, History, Target } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import posthog from 'posthog-js'
 import { useEffect, useState } from 'react'
 import { AlreadyPlayedCard } from './AlreadyPlayedCard'
 import { BoardColumn } from './BoardColumn'
@@ -118,7 +118,7 @@ export function ChessGame({
   const cardMeta = shownResult
     ? { Icon: CheckCircle2, title: 'Your Result', iconClass: 'text-primary' }
     : isToday
-      ? { Icon: Target, title: 'Make Your Guess', iconClass: 'text-primary' }
+      ? { Icon: Target, title: 'Guess The Elo', iconClass: 'text-primary' }
       : {
           Icon: History,
           title: 'Past Game',
