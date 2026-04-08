@@ -44,7 +44,9 @@ export function generateShareText(score: number, date: string): string {
   })
   return [
     `Gueslo - ${dateLabel}`,
-    `${bar} ${score.toLocaleString()}/5,000`,
+    bar,
+    `${score.toLocaleString()} pts`,
+    ``,
     `https://gueslo.app`,
   ].join('\n')
 }
