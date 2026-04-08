@@ -10,19 +10,19 @@ The wizard has completed a deep integration of PostHog analytics into Gueslo. He
 
 ## Events instrumented
 
-| Event | Description | File |
-|---|---|---|
-| `daily_guess_submitted` | User submits an Elo guess for the daily challenge (client) | `app/_components/ChessGame.tsx` |
-| `daily_result_shared` | User copies the Wordle-style share text after the daily game (client) | `app/_components/ResultDialog.tsx` |
-| `signup_nudge_clicked` | Anonymous user clicks "Create a free account" from the result dialog (client) | `app/_components/ResultDialog.tsx` |
-| `ranked_nudge_clicked` | Logged-in user clicks "Start a ranked session" from the result dialog upsell (client) | `app/_components/ResultDialog.tsx` |
-| `ranked_session_started` | User clicks Start Session in the ranked lobby (client) | `app/ranked/_components/RankedLobby.tsx` |
-| `ranked_session_replayed` | User clicks Play Again after completing a ranked session (client) | `app/ranked/_components/SessionCompleteCard.tsx` |
-| `user_signed_up` | Email/password sign-up completed (server) — includes `posthog.identify()` | `lib/actions/auth.ts` |
-| `user_signed_in` | Email/password sign-in completed (server) — includes `posthog.identify()` | `lib/actions/auth.ts` |
-| `daily_result_saved` | Daily game result persisted to DB for a logged-in user (server) | `lib/actions/games.ts` |
-| `ranked_round_submitted` | A ranked round result is saved server-side (server) | `lib/actions/ranked.ts` |
-| `ranked_session_completed` | All 5 ranked rounds done, session finalized (server) | `lib/actions/ranked.ts` |
+| Event                      | Description                                                                           | File                                             |
+| -------------------------- | ------------------------------------------------------------------------------------- | ------------------------------------------------ |
+| `daily_guess_submitted`    | User submits an Elo guess for the daily challenge (client)                            | `app/_components/ChessGame.tsx`                  |
+| `daily_result_shared`      | User copies the Wordle-style share text after the daily game (client)                 | `app/_components/ResultDialog.tsx`               |
+| `signup_nudge_clicked`     | Anonymous user clicks "Create a free account" from the result dialog (client)         | `app/_components/ResultDialog.tsx`               |
+| `ranked_nudge_clicked`     | Logged-in user clicks "Start a ranked session" from the result dialog upsell (client) | `app/_components/ResultDialog.tsx`               |
+| `ranked_session_started`   | User clicks Start Session in the ranked lobby (client)                                | `app/ranked/_components/RankedLobby.tsx`         |
+| `ranked_session_replayed`  | User clicks Play Again after completing a ranked session (client)                     | `app/ranked/_components/SessionCompleteCard.tsx` |
+| `user_signed_up`           | Email/password sign-up completed (server) — includes `posthog.identify()`             | `lib/actions/auth.ts`                            |
+| `user_signed_in`           | Email/password sign-in completed (server) — includes `posthog.identify()`             | `lib/actions/auth.ts`                            |
+| `daily_result_saved`       | Daily game result persisted to DB for a logged-in user (server)                       | `lib/actions/games.ts`                           |
+| `ranked_round_submitted`   | A ranked round result is saved server-side (server)                                   | `lib/actions/ranked.ts`                          |
+| `ranked_session_completed` | All 5 ranked rounds done, session finalized (server)                                  | `lib/actions/ranked.ts`                          |
 
 ## Next steps
 

@@ -26,7 +26,7 @@ export function GuessCard({
   onForward,
 }: Props) {
   return (
-    <div className="bg-card border-border w-full max-w-[280px] shrink-0 overflow-hidden rounded-xl border lg:w-[220px]">
+    <div className="bg-card border-border w-full shrink-0 overflow-hidden rounded-xl border lg:w-[220px]">
       {/* Header */}
       <div className="border-border bg-muted/30 flex items-center gap-2 border-b px-4 py-3">
         <Icon className={`size-4 ${iconClass}`} />

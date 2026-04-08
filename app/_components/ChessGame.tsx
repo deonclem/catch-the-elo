@@ -127,23 +127,6 @@ export function ChessGame({
 
   return (
     <div className="flex flex-col items-center gap-6 lg:flex-row lg:items-start lg:justify-center lg:gap-10">
-      {/* Left column — history card (desktop only) */}
-      <div className="bg-card border-border hidden w-[220px] shrink-0 overflow-hidden rounded-xl border lg:block">
-        <div className="border-border bg-muted/30 flex items-center gap-2 border-b px-4 py-3">
-          <CalendarDays className="text-muted-foreground size-4" />
-          <h2 className="text-sm font-semibold">This Week</h2>
-        </div>
-        <div className="p-3">
-          <DailyCalendar
-            days={recentDays}
-            streak={streak}
-            streakStatus={streakStatus}
-            isLoggedIn={isLoggedIn}
-            selectedDate={selectedDate}
-          />
-        </div>
-      </div>
-
       {/* Middle column — board */}
       <BoardColumn
         game={game}
@@ -202,6 +185,23 @@ export function ChessGame({
           <PastDayCard key={selectedDate} actualElo={pastDayElo} />
         ) : null}
       </GuessCard>
+
+      {/* This Week — right sidebar on desktop, below guess card on mobile */}
+      <div className="bg-card border-border w-full shrink-0 overflow-hidden rounded-xl border lg:order-first lg:w-[220px]">
+        <div className="border-border bg-muted/30 flex items-center gap-2 border-b px-4 py-3">
+          <CalendarDays className="text-muted-foreground size-4" />
+          <h2 className="text-sm font-semibold">This Week</h2>
+        </div>
+        <div className="p-3">
+          <DailyCalendar
+            days={recentDays}
+            streak={streak}
+            streakStatus={streakStatus}
+            isLoggedIn={isLoggedIn}
+            selectedDate={selectedDate}
+          />
+        </div>
+      </div>
 
       {result !== null && !suppressResultDialog && (
         <ResultDialog
