@@ -235,23 +235,30 @@ export function ResultDialog({
             )}
           </div>
 
-          {/* Ranked nudge for logged-in users who haven't tried ranked yet */}
-          {isLoggedIn && !hasPlayedRanked && (
+          {/* Ranked nudge — daily mode only */}
+          {isLoggedIn && ratingChange === undefined && (
             <div className="border-border bg-muted/30 w-full rounded-lg border p-3">
               <p className="text-foreground mb-1 text-sm font-semibold">
-                Try Ranked Mode
+                {hasPlayedRanked ? 'Want more games?' : 'Try Ranked Mode'}
               </p>
               <p className="text-muted-foreground mb-3 text-xs">
-                Earn a real Elo rating — 5 rounds, one session.
+                {hasPlayedRanked
+                  ? 'Jump into a ranked session - 5 rounds, climb the leaderboard.'
+                  : 'Earn a real Elo rating -  5 rounds, one session.'}
               </p>
               <Button asChild variant="outline" className="w-full" size="sm">
                 <Link
                   href="/ranked"
                   onClick={() =>
-                    posthog.capture('ranked_nudge_clicked', { score })
+                    posthog.capture('ranked_nudge_clicked', {
+                      score,
+                      has_played_ranked: hasPlayedRanked,
+                    })
                   }
                 >
-                  Start a ranked session →
+                  {hasPlayedRanked
+                    ? 'Play ranked →'
+                    : 'Start a ranked session →'}
                 </Link>
               </Button>
             </div>

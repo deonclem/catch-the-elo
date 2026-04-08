@@ -56,7 +56,7 @@ export function RankedLobby({ rating }: Props) {
       {/* How it works */}
       <div className="text-muted-foreground max-w-xs space-y-1.5 text-center text-sm">
         <p>Play {RANKED_ROUNDS} games from the pool.</p>
-        <p>Good guesses earn rating — bad ones cost it.</p>
+        <p>Good guesses earn rating - bad ones cost it.</p>
         <p>
           A weaker player gaining the same score as a stronger one earns more.
         </p>

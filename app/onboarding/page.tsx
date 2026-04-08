@@ -26,7 +26,7 @@ export default async function OnboardingPage() {
       <div className="w-full max-w-sm space-y-6">
         <div className="space-y-1 text-center">
           <h1 className="text-2xl font-bold tracking-tight">
-            Almost there — pick your username
+            Almost there - pick your username
           </h1>
           <p className="text-muted-foreground text-sm">
             You can&apos;t change this later, so choose wisely.

@@ -54,7 +54,7 @@ export default async function WelcomePage() {
           </h1>
           <p className="text-muted-foreground text-sm">
             {hasPlayedToday
-              ? "Your score was saved — you're on the board!"
+              ? "Your score was saved - you're on the board!"
               : "You're all set. Here's what you can do:"}
           </p>
         </div>
@@ -66,7 +66,7 @@ export default async function WelcomePage() {
                 <li className="flex items-center gap-3">
                   <CheckCircle2 className="text-primary size-4 shrink-0" />
                   <span className="text-sm">
-                    Today&apos;s daily game — done ✓
+                    Today&apos;s daily game - done ✓
                   </span>
                 </li>
                 <li className="flex items-center gap-3">

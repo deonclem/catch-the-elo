@@ -1,5 +1,4 @@
 import { Navbar } from '@/components/layout/Navbar'
-import Link from 'next/link'
 import {
   computeActiveStreak,
   computeStreakStatus,
@@ -10,6 +9,7 @@ import { Analytics } from '@vercel/analytics/next'
 import { SpeedInsights } from '@vercel/speed-insights/next'
 import type { Metadata } from 'next'
 import { Geist_Mono, Inter } from 'next/font/google'
+import Link from 'next/link'
 import './globals.css'
 
 const inter = Inter({
@@ -24,8 +24,8 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: 'Gueslo — Guess the Elo',
-    template: '%s — Gueslo',
+    default: 'Gueslo - Guess the Elo',
+    template: '%s - Gueslo',
   },
   description:
     'Can you guess the Elo rating of a chess game? Play the daily challenge or ranked mode. The best Elo guesser game online.',
@@ -42,14 +42,14 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     siteName: 'Gueslo',
-    title: 'Gueslo — Guess the Elo',
+    title: 'Gueslo - Guess the Elo',
     description:
       'Can you guess the Elo rating of a chess game? Play the daily challenge or ranked mode.',
     url: 'https://gueslo.app',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Gueslo — Guess the Elo',
+    title: 'Gueslo - Guess the Elo',
     description:
       'Can you guess the Elo rating of a chess game? Play the daily challenge or ranked mode.',
   },
