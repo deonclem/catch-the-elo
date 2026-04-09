@@ -158,6 +158,11 @@
 .chess-board-wrapper * {
   touch-action: pan-y !important;
 }
+/* Prevent browser forced-dark-mode from inverting piece SVGs.  */
+/* Black pieces (fill #000) would vanish on a darkened board.  */
+.chess-board-wrapper {
+  color-scheme: only light;
+}
 /* Remove grab/pointer cursor on desktop — board is view-only  */
 @media (pointer: fine) {
   .chess-board-wrapper * {
