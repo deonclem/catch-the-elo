@@ -152,6 +152,9 @@ export function ChessGame({
                 ? "Guess the average Elo of today's game"
                 : `Viewing ${new Date(selectedDate + 'T00:00:00Z').toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric', timeZone: 'UTC' })}`}
             </p>
+            <p className="text-muted-foreground/60 mt-0.5 text-xs">
+              All games are sourced from Lichess
+            </p>
           </div>
         }
       />
